@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:planpal/domain/enums/filter_tab.dart';
 import 'package:planpal/domain/enums/sort_option.dart';
+import 'package:planpal/domain/enums/task_status.dart';
 import 'package:planpal/domain/models/task.dart';
 
 /// Holds the currently active [FilterTab] on the Tasks screen.

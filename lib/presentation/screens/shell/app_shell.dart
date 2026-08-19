@@ -3,64 +3,77 @@ import 'package:go_router/go_router.dart';
 import 'package:planpal/core/constants/app_colors.dart';
 import 'package:planpal/core/constants/app_strings.dart';
 
-/// The persistent shell wrapping all five primary screens.
-///
-/// Renders the [BottomNavigationBar] once and never rebuilds it on tab switch.
-/// Each branch maintains its own Navigator stack (StatefulShellRoute).
+/// Persistent shell with bottom navigation bar matching the mockup design.
 class AppShell extends StatelessWidget {
-  const AppShell({
-    super.key,
-    required this.navigationShell,
-  });
-
+  const AppShell({super.key, required this.navigationShell});
   final StatefulNavigationShell navigationShell;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // The body is the currently active branch's Navigator
       body: navigationShell,
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: navigationShell.currentIndex,
-        onTap: _onTap,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home_rounded),
-            label: AppStrings.navHome,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              children: [
+                _NavItem(
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home_rounded,
+                  label: AppStrings.navHome,
+                  isActive: navigationShell.currentIndex == 0,
+                  onTap: () => _onTap(context, 0),
+                ),
+                _NavItem(
+                  icon: Icons.checklist_outlined,
+                  activeIcon: Icons.checklist_rounded,
+                  label: AppStrings.navTasks,
+                  isActive: navigationShell.currentIndex == 1,
+                  onTap: () => _onTap(context, 1),
+                ),
+                _NavItem(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  activeIcon: Icons.chat_bubble_rounded,
+                  label: AppStrings.navChat,
+                  isActive: navigationShell.currentIndex == 2,
+                  onTap: () => _onTap(context, 2),
+                ),
+                _NavItem(
+                  icon: Icons.person_outline_rounded,
+                  activeIcon: Icons.person_rounded,
+                  label: AppStrings.navProfile,
+                  isActive: navigationShell.currentIndex == 3,
+                  onTap: () => _onTap(context, 3),
+                ),
+                _NavItem(
+                  icon: Icons.settings_outlined,
+                  activeIcon: Icons.settings_rounded,
+                  label: AppStrings.navSettings,
+                  isActive: navigationShell.currentIndex == 4,
+                  onTap: () => _onTap(context, 4),
+                ),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.checklist_outlined),
-            activeIcon: Icon(Icons.checklist_rounded),
-            label: AppStrings.navTasks,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline_rounded),
-            activeIcon: Icon(Icons.chat_bubble_rounded),
-            label: AppStrings.navChat,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline_rounded),
-            activeIcon: Icon(Icons.person_rounded),
-            label: AppStrings.navProfile,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings_rounded),
-            label: AppStrings.navSettings,
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  void _onTap(int index) {
+  void _onTap(BuildContext context, int index) {
     if (index == navigationShell.currentIndex) {
-      // Tapping the active tab scrolls its primary scroll view to top (Req 1.6)
-      final scrollController = PrimaryScrollController.maybeOf(
-        navigationShell.shellRouteContext,
-      );
+      final scrollController = PrimaryScrollController.maybeOf(context);
       if (scrollController != null && scrollController.hasClients) {
         scrollController.animateTo(
           0,
@@ -70,10 +83,65 @@ class AppShell extends StatelessWidget {
         return;
       }
     }
-    // Navigate to the tapped branch
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Semantics(
+        label: label,
+        button: true,
+        selected: isActive,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isActive ? activeIcon : icon,
+                color: isActive
+                    ? AppColors.primary
+                    : Colors.grey.shade400,
+                size: 22,
+              ),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: isActive
+                      ? FontWeight.w700
+                      : FontWeight.w400,
+                  color: isActive
+                      ? AppColors.primary
+                      : Colors.grey.shade400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
