@@ -1,0 +1,65 @@
+name: planpal
+description: "PlanPal — A Flutter task management application."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigation
+  go_router: ^14.6.3
+
+  # Local storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Image picker (avatar selection)
+  image_picker: ^1.1.2
+
+  # Internationalisation
+  intl: ^0.20.2
+
+  # Unique IDs
+  uuid: ^4.5.1
+
+  # URL launching (email, app store)
+  url_launcher: ^6.3.1
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Code generation
+  build_runner: ^2.4.13
+  riverpod_generator: ^2.6.5
+  # hive_generator removed — TypeAdapters are written manually to avoid
+  # the source_gen ^1.0.0 vs ^2.0.0 conflict with riverpod_generator
+
+  # Testing
+  mocktail: ^1.0.4
+  # glados removed — incompatible with riverpod_generator due to transitive
+  # analyzer/test_api version conflict. Property tests use flutter_test instead.
+
+  # Lints
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true  # enables flutter gen-l10n for ARB files
+
+  assets:
+    - assets/images/
+
