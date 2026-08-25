@@ -38,7 +38,7 @@ ProviderContainer makeContainer(List<Task> tasks) {
   );
 }
 
-class _FakeTaskNotifier extends AsyncNotifier<List<Task>> {
+class _FakeTaskNotifier extends TaskNotifier {
   _FakeTaskNotifier(this._tasks);
   final List<Task> _tasks;
 

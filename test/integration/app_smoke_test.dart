@@ -1,19 +1,8 @@
 // Integration smoke tests for PlanPal (Task 19.1).
 //
-// These tests exercise real app navigation and data flows using the full
-// widget tree with ProviderScope and GoRouter. Hive is NOT initialised here —
-// providers are overridden with in-memory fakes so tests run without device
-// storage.
-//
-// Coverage:
-//   - App renders to Home screen (splash bypassed)
-//   - All 5 bottom nav tabs navigate to their screens
-//   - Add task → appears in list
-//   - Edit task → changes reflected in list
-//   - Delete task → removed from list, snackbar shown
-//   - Mark complete → task moves to Completed tab
-//   - Theme toggle: light → dark → system default
-//   - Profile edit → saved values show in profile screen
+// All fake notifiers extend the REAL notifier class (not AsyncNotifier<X>)
+// so that overrideWith() type-checks correctly after Phase 2 refactor.
+// No network or Supabase calls are made — providers are fully overridden.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,37 +28,38 @@ import 'package:planpal/presentation/screens/shell/app_shell.dart';
 import 'package:planpal/presentation/screens/tasks/tasks_screen.dart';
 
 // ── Fake notifiers ────────────────────────────────────────────────────────────
+// Must extend the REAL notifier class so overrideWith() passes the type check.
 
-class _FakeTaskNotifier extends AsyncNotifier<List<Task>> {
+class _FakeTaskNotifier extends TaskNotifier {
   final _tasks = <Task>[];
 
   @override
-  Future<List<Task>> build() async => List.from(_tasks);
+  Future<List<Task>> build() async => List<Task>.from(_tasks);
 
   void seed(List<Task> tasks) {
     _tasks
       ..clear()
       ..addAll(tasks);
-    state = AsyncData(List.from(_tasks));
+    state = AsyncData(List<Task>.from(_tasks));
   }
 
   @override
   Future<void> addTask(Task task) async {
     _tasks.add(task);
-    state = AsyncData(List.from(_tasks));
+    state = AsyncData(List<Task>.from(_tasks));
   }
 
   @override
   Future<void> updateTask(Task task) async {
     final idx = _tasks.indexWhere((t) => t.id == task.id);
     if (idx != -1) _tasks[idx] = task;
-    state = AsyncData(List.from(_tasks));
+    state = AsyncData(List<Task>.from(_tasks));
   }
 
   @override
   Future<void> deleteTask(String id) async {
     _tasks.removeWhere((t) => t.id == id);
-    state = AsyncData(List.from(_tasks));
+    state = AsyncData(List<Task>.from(_tasks));
   }
 
   @override
@@ -78,7 +68,7 @@ class _FakeTaskNotifier extends AsyncNotifier<List<Task>> {
     if (idx != -1) {
       _tasks[idx] = _tasks[idx].copyWith(status: TaskStatus.completed);
     }
-    state = AsyncData(List.from(_tasks));
+    state = AsyncData(List<Task>.from(_tasks));
   }
 
   @override
@@ -87,12 +77,12 @@ class _FakeTaskNotifier extends AsyncNotifier<List<Task>> {
     if (idx != -1) {
       _tasks[idx] = _tasks[idx].copyWith(status: TaskStatus.inProgress);
     }
-    state = AsyncData(List.from(_tasks));
+    state = AsyncData(List<Task>.from(_tasks));
   }
 }
 
-class _FakeUserNotifier extends AsyncNotifier<User?> {
-  User? _user = const User(
+class _FakeUserNotifier extends UserNotifier {
+  User? _fakeUser = const User(
     id: 'u1',
     firstName: 'Alex',
     lastName: 'Morgan',
@@ -101,19 +91,22 @@ class _FakeUserNotifier extends AsyncNotifier<User?> {
   );
 
   @override
-  Future<User?> build() async => _user;
+  Future<User?> build() async => _fakeUser;
 
   @override
   Future<void> updateProfile(User updated) async {
-    _user = updated;
-    state = AsyncData(_user);
+    _fakeUser = updated;
+    state = AsyncData(_fakeUser);
   }
 
   @override
-  Future<void> updateAvatar(String path) async {}
+  Future<void> updateAvatar(String path) async {
+    _fakeUser = _fakeUser?.copyWith(avatarPath: path);
+    state = AsyncData(_fakeUser);
+  }
 }
 
-class _FakePreferencesNotifier extends AsyncNotifier<AppPreferences> {
+class _FakePreferencesNotifier extends PreferencesNotifier {
   @override
   Future<AppPreferences> build() async => AppPreferences.defaults;
 
@@ -124,36 +117,55 @@ class _FakePreferencesNotifier extends AsyncNotifier<AppPreferences> {
   }
 
   @override
-  Future<void> setLanguage(String code) async {}
+  Future<void> setLanguage(String code) async {
+    final current = state.valueOrNull ?? AppPreferences.defaults;
+    state = AsyncData(current.copyWith(languageCode: code));
+  }
 
   @override
-  Future<void> setTimeZone(String tz) async {}
+  Future<void> setTimeZone(String tz) async {
+    final current = state.valueOrNull ?? AppPreferences.defaults;
+    state = AsyncData(current.copyWith(timeZoneId: tz));
+  }
 
   @override
-  Future<void> setTaskReminders(bool v) async {}
+  Future<void> setTaskReminders(bool v) async {
+    final current = state.valueOrNull ?? AppPreferences.defaults;
+    state = AsyncData(current.copyWith(notifyTaskReminders: v));
+  }
 
   @override
-  Future<void> setDueDateAlerts(bool v) async {}
+  Future<void> setDueDateAlerts(bool v) async {
+    final current = state.valueOrNull ?? AppPreferences.defaults;
+    state = AsyncData(current.copyWith(notifyDueDateAlerts: v));
+  }
 
   @override
-  Future<void> setChatMessages(bool v) async {}
+  Future<void> setChatMessages(bool v) async {
+    final current = state.valueOrNull ?? AppPreferences.defaults;
+    state = AsyncData(current.copyWith(notifyChatMessages: v));
+  }
 
   @override
-  Future<void> setWeeklySummary(bool v) async {}
+  Future<void> setWeeklySummary(bool v) async {
+    final current = state.valueOrNull ?? AppPreferences.defaults;
+    state = AsyncData(current.copyWith(notifyWeeklySummary: v));
+  }
 }
 
-class _FakeConversationNotifier
-    extends AsyncNotifier<List<Conversation>> {
+class _FakeConversationNotifier extends ConversationNotifier {
   @override
   Future<List<Conversation>> build() async => [];
 }
 
-// ── App harness ───────────────────────────────────────────────────────────────
+// ── Shared instances ──────────────────────────────────────────────────────────
 
 final _taskNotifier = _FakeTaskNotifier();
 final _userNotifier = _FakeUserNotifier();
 final _prefsNotifier = _FakePreferencesNotifier();
 final _convNotifier = _FakeConversationNotifier();
+
+// ── Router ────────────────────────────────────────────────────────────────────
 
 GoRouter _appRouter() => GoRouter(
       initialLocation: '/home',
@@ -163,53 +175,62 @@ GoRouter _appRouter() => GoRouter(
           branches: [
             StatefulShellBranch(routes: [
               GoRoute(
-                  path: '/home', builder: (_, __) => const HomeScreen()),
+                path: '/home',
+                builder: (_, __) => const HomeScreen(),
+              ),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(
-                  path: '/tasks',
-                  builder: (_, state) => TasksScreen(
-                      initialFilter: state.extra != null
-                          ? (state.extra as Map)['filter']
-                          : null)),
+                path: '/tasks',
+                builder: (_, state) => TasksScreen(
+                  initialFilter: state.extra != null
+                      ? (state.extra as Map)['filter']
+                      : null,
+                ),
+              ),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(
-                  path: '/chat', builder: (_, __) => const ChatScreen()),
+                path: '/chat',
+                builder: (_, __) => const ChatScreen(),
+              ),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(
-                  path: '/profile',
-                  builder: (_, __) => const ProfileScreen()),
+                path: '/profile',
+                builder: (_, __) => const ProfileScreen(),
+              ),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(
-                  path: '/settings',
-                  builder: (_, __) => const SettingsScreen(),
-                  routes: [
-                    GoRoute(
-                        path: 'notifications',
-                        builder: (_, __) => const Scaffold()),
-                    GoRoute(
-                        path: 'security',
-                        builder: (_, __) => const Scaffold()),
-                    GoRoute(
-                        path: 'help', builder: (_, __) => const Scaffold()),
-                    GoRoute(
-                        path: 'about',
-                        builder: (_, __) => const Scaffold()),
-                    GoRoute(
-                        path: 'language',
-                        builder: (_, __) => const Scaffold()),
-                    GoRoute(
-                        path: 'timezone',
-                        builder: (_, __) => const Scaffold()),
-                  ]),
+                path: '/settings',
+                builder: (_, __) => const SettingsScreen(),
+                routes: [
+                  GoRoute(
+                      path: 'notifications',
+                      builder: (_, __) => const Scaffold()),
+                  GoRoute(
+                      path: 'security',
+                      builder: (_, __) => const Scaffold()),
+                  GoRoute(
+                      path: 'help', builder: (_, __) => const Scaffold()),
+                  GoRoute(
+                      path: 'about', builder: (_, __) => const Scaffold()),
+                  GoRoute(
+                      path: 'language',
+                      builder: (_, __) => const Scaffold()),
+                  GoRoute(
+                      path: 'timezone',
+                      builder: (_, __) => const Scaffold()),
+                ],
+              ),
             ]),
           ],
         ),
       ],
     );
+
+// ── App harness ───────────────────────────────────────────────────────────────
 
 Widget buildApp() {
   return ProviderScope(
@@ -259,10 +280,11 @@ void main() {
       await tester.tap(find.text('Tasks'));
       await tester.pumpAndSettle();
       expect(find.text('PlanPal'), findsWidgets);
-      expect(find.text('All'), findsOneWidget); // filter tab
+      expect(find.text('All'), findsOneWidget);
     });
 
-    testWidgets('tapping Chat tab shows Conversations screen', (tester) async {
+    testWidgets('tapping Chat tab shows Conversations screen',
+        (tester) async {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
       await tester.tap(find.text('Chat'));
@@ -275,7 +297,6 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Profile'));
       await tester.pumpAndSettle();
-      // User name should be visible
       expect(find.textContaining('Alex'), findsWidgets);
     });
 
@@ -294,13 +315,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Home'));
       await tester.pumpAndSettle();
-      // Home should show quick actions
       expect(find.text('Quick Actions'), findsOneWidget);
     });
   });
 
   group('App smoke — tasks flow', () {
-    testWidgets('Tasks screen shows empty state when no tasks', (tester) async {
+    testWidgets('Tasks screen shows empty state when no tasks',
+        (tester) async {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
       await tester.tap(find.text('Tasks'));
@@ -328,16 +349,17 @@ void main() {
     });
 
     testWidgets('completed task appears in Completed filter', (tester) async {
-      final completedTask = Task(
-        id: 'smoke-done',
-        name: 'Completed task',
-        priority: TaskPriority.low,
-        status: TaskStatus.completed,
-        dueDate: DateTime.now(),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-      _taskNotifier.seed([completedTask]);
+      _taskNotifier.seed([
+        Task(
+          id: 'smoke-done',
+          name: 'Completed task',
+          priority: TaskPriority.low,
+          status: TaskStatus.completed,
+          dueDate: DateTime.now(),
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      ]);
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
       await tester.tap(find.text('Tasks'));

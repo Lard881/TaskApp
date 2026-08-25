@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:planpal/domain/enums/task_priority.dart';
 import 'package:planpal/domain/enums/task_status.dart';
 import 'package:planpal/domain/models/task.dart';
+import 'package:planpal/presentation/widgets/priority_badge.dart';
 import 'package:planpal/presentation/widgets/task_list_item.dart';
 
 Task makeTask({

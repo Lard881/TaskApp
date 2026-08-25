@@ -61,8 +61,8 @@ class WorkspaceNotifier extends AsyncNotifier<List<Workspace>> {
     required String emoji,
   }) async {
     final workspace = await _repo.create(name: name, emoji: emoji);
-    // Refresh list
-    final updated = [...(state.valueOrNull ?? []), workspace];
+    // Refresh list — explicit cast prevents List<dynamic> type error
+    final updated = <Workspace>[...(state.valueOrNull ?? []), workspace];
     state = AsyncData(updated);
     // Switch to newly created workspace
     ref.read(activeWorkspaceIdProvider.notifier).state = workspace.id;

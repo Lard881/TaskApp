@@ -12,14 +12,14 @@ import 'package:planpal/presentation/screens/home/home_screen.dart';
 
 // ── Fake notifiers ────────────────────────────────────────────────────────────
 
-class _FakeTaskNotifier extends AsyncNotifier<List<Task>> {
+class _FakeTaskNotifier extends TaskNotifier {
   _FakeTaskNotifier(this._tasks);
   final List<Task> _tasks;
   @override
   Future<List<Task>> build() async => _tasks;
 }
 
-class _FakeUserNotifier extends AsyncNotifier<User?> {
+class _FakeUserNotifier extends UserNotifier {
   _FakeUserNotifier(this._user);
   final User? _user;
   @override
