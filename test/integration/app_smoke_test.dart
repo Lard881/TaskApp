@@ -31,16 +31,28 @@ import 'package:planpal/presentation/screens/tasks/tasks_screen.dart';
 // Must extend the REAL notifier class so overrideWith() passes the type check.
 
 class _FakeTaskNotifier extends TaskNotifier {
-  final _tasks = <Task>[];
+  // Tasks stored here before the notifier is mounted into a ProviderContainer.
+  // seed() stores them in this list; build() reads from it.
+  // This avoids the LateInitializationError caused by setting state= before
+  // the notifier's _element is initialised by Riverpod.
+  final List<Task> _pending = [];
+  bool _seeded = false;
 
   @override
-  Future<List<Task>> build() async => List<Task>.from(_tasks);
+  Future<List<Task>> build() async => List<Task>.from(_pending);
 
   void seed(List<Task> tasks) {
-    _tasks
+    _pending
       ..clear()
       ..addAll(tasks);
-    state = AsyncData(List<Task>.from(_tasks));
+    _seeded = true;
+
+    // Only set state directly if already mounted (element initialised)
+    try {
+      state = AsyncData(List<Task>.from(_pending));
+    } catch (_) {
+      // Notifier not yet mounted — build() will pick up _pending on first call
+    }
   }
 
   @override
@@ -159,6 +171,8 @@ class _FakeConversationNotifier extends ConversationNotifier {
 }
 
 // ── Shared instances ──────────────────────────────────────────────────────────
+// Created once. _FakeTaskNotifier.seed() is safe to call before mounting
+// because it guards against the LateInitializationError.
 
 final _taskNotifier = _FakeTaskNotifier();
 final _userNotifier = _FakeUserNotifier();
@@ -252,7 +266,8 @@ Widget buildApp() {
 
 void main() {
   setUp(() {
-    _taskNotifier.seed([]);
+    // Clear pending tasks before each test — safe before widget mounting
+    _taskNotifier._pending.clear();
   });
 
   group('App smoke — initial render', () {

@@ -73,17 +73,19 @@ void main() {
 
   group('AvatarWidget — accessibility', () {
     testWidgets('semanticLabel is applied when provided', (tester) async {
-      // semanticLabel is only rendered inside the Semantics widget when
-      // onTap is non-null — provide a tap callback to trigger the Semantics wrapper
+      // Enable the semantics tree so find.bySemanticsLabel works
+      final handle = tester.ensureSemantics();
       await tester.pumpWidget(buildAvatar(
         initials: 'AB',
         semanticLabel: 'Go to Profile',
         onTap: () {},
       ));
+      await tester.pumpAndSettle();
       expect(
         find.bySemanticsLabel('Go to Profile'),
         findsOneWidget,
       );
+      handle.dispose();
     });
   });
 }
