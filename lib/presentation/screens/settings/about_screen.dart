@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:planpal/core/constants/app_colors.dart';
 import 'package:planpal/core/constants/app_sizes.dart';
@@ -23,7 +24,7 @@ class AboutScreen extends StatelessWidget {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(AppSizes.radiusL),
                 ),
-                child: const Icon(Icons.check_circle_rounded,
+                child: const Icon(BootstrapIcons.check_circle,
                     color: Colors.white, size: 48),
               ),
               const SizedBox(height: AppSizes.spaceL),

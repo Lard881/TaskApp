@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:planpal/application/providers/hive_providers.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:planpal/application/notifiers/auth_notifier.dart';
+import 'package:planpal/application/providers/supabase_providers.dart';
 import 'package:planpal/domain/models/conversation.dart';
 import 'package:planpal/domain/models/message.dart';
-import 'package:planpal/infrastructure/mock/mock_data.dart';
 import 'package:planpal/infrastructure/repositories/conversation_repository.dart';
 import 'package:uuid/uuid.dart';
 
-/// Manages the full conversation list and search state.
 class ConversationNotifier extends AsyncNotifier<List<Conversation>> {
   late final ConversationRepository _repo;
   static const _uuid = Uuid();
@@ -15,14 +15,30 @@ class ConversationNotifier extends AsyncNotifier<List<Conversation>> {
   Future<List<Conversation>> build() async {
     _repo = ref.watch(conversationRepositoryProvider);
 
+    // Live conversation updates via Realtime
     _repo.watchConversations().listen((convs) {
-      if (state is! AsyncLoading) {
-        state = AsyncData(convs);
-      }
+      if (state is! AsyncLoading) state = AsyncData(convs);
     });
 
     return _repo.getAll();
   }
+
+  // ── Current user id ───────────────────────────────────────────────────────
+
+  String get _currentUserId =>
+      Supabase.instance.client.auth.currentUser?.id ?? '';
+
+  // ── Delete ────────────────────────────────────────────────────────────────
+
+  Future<void> deleteConversation(String conversationId) async {
+    await _repo.deleteConversation(conversationId);
+    final updated = (state.valueOrNull ?? [])
+        .where((c) => c.id != conversationId)
+        .toList();
+    state = AsyncData(updated);
+  }
+
+  // ── Send message ──────────────────────────────────────────────────────────
 
   /// Sends a message in [conversationId] from the current user.
   Future<void> sendMessage(String conversationId, String text) async {
@@ -30,30 +46,32 @@ class ConversationNotifier extends AsyncNotifier<List<Conversation>> {
     final message = Message(
       id: _uuid.v4(),
       conversationId: conversationId,
-      senderId: MockData.currentUserId,
+      senderId: _currentUserId,
       text: text.trim(),
       sentAt: DateTime.now(),
       isRead: true,
     );
     await _repo.saveMessage(message);
+    // Realtime listener handles state update automatically
   }
 
-  /// Marks all unread messages in [conversationId] as read.
+  // ── Mark read ─────────────────────────────────────────────────────────────
+
   Future<void> markRead(String conversationId) async {
     await _repo.markAllRead(conversationId);
   }
 
-  /// Creates a new conversation with [participantIds].
-  /// If a conversation with exactly those participants already exists,
-  /// returns the existing one instead of creating a duplicate (Req 15.4).
-  Future<Conversation> startConversation(
-      List<String> participantIds) async {
-    final allParticipants = [MockData.currentUserId, ...participantIds]
+  // ── Start conversation ────────────────────────────────────────────────────
+
+  /// Creates a new conversation or returns an existing one with
+  /// the same set of participants (deduplication).
+  Future<Conversation> startConversation(List<String> participantIds) async {
+    final allParticipants = [_currentUserId, ...participantIds]
         .toSet()
         .toList()
       ..sort();
 
-    // Check for existing conversation with exactly the same participants
+    // Check for existing conversation with exact same participants
     final existing = (await _repo.getAll()).where((c) {
       final sorted = [...c.participantIds]..sort();
       return sorted.join(',') == allParticipants.join(',');
@@ -61,11 +79,10 @@ class ConversationNotifier extends AsyncNotifier<List<Conversation>> {
 
     if (existing != null) return existing;
 
-    // Create a new conversation
     final isGroup = allParticipants.length > 2;
     final name = isGroup
         ? 'Group (${allParticipants.length} members)'
-        : participantIds.first; // will be resolved to name in UI
+        : participantIds.first;
 
     final conv = Conversation(
       id: _uuid.v4(),
@@ -81,41 +98,40 @@ class ConversationNotifier extends AsyncNotifier<List<Conversation>> {
   }
 }
 
-/// The conversations list provider.
+// ── Providers ─────────────────────────────────────────────────────────────────
+
 final conversationsProvider =
     AsyncNotifierProvider<ConversationNotifier, List<Conversation>>(
   ConversationNotifier.new,
 );
 
-/// The current search query on the Chat screen.
 final chatSearchQueryProvider = StateProvider<String>((ref) => '');
 
-/// Filtered conversations based on the search query (Req 13.2).
 final filteredConversationsProvider = Provider<List<Conversation>>((ref) {
   final query = ref.watch(chatSearchQueryProvider).toLowerCase().trim();
   final convsAsync = ref.watch(conversationsProvider);
-
   return convsAsync.when(
     data: (convs) {
       if (query.isEmpty) return convs;
-      return convs.where((c) {
-        return c.name.toLowerCase().contains(query) ||
-            c.lastMessagePreview.toLowerCase().contains(query);
-      }).toList();
+      return convs
+          .where((c) =>
+              c.name.toLowerCase().contains(query) ||
+              c.lastMessagePreview.toLowerCase().contains(query))
+          .toList();
     },
     loading: () => [],
     error: (_, __) => [],
   );
 });
 
-/// Messages for a specific conversation.
+/// Live message stream for a specific conversation.
 final messagesProvider =
-    FutureProvider.family<List<Message>, String>((ref, conversationId) async {
+    StreamProvider.family<List<Message>, String>((ref, conversationId) {
   final repo = ref.watch(conversationRepositoryProvider);
-  return repo.getMessages(conversationId);
+  return repo.watchMessages(conversationId);
 });
 
-/// Recent activity items for the Profile screen (Req 17).
+/// Recent activity for the profile screen.
 final recentActivityProvider = FutureProvider((ref) async {
   final repo = ref.watch(conversationRepositoryProvider);
   return repo.getRecentActivity();

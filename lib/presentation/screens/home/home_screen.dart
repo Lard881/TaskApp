@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -69,7 +70,7 @@ class HomeScreen extends ConsumerWidget {
                     const Spacer(),
                     // Bell icon
                     IconButton(
-                      icon: const Icon(Icons.notifications_outlined),
+                      icon: const Icon(BootstrapIcons.bell),
                       onPressed: () {},
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -220,7 +221,7 @@ class HomeScreen extends ConsumerWidget {
                         Expanded(
                           child: _QuickActionTile(
                             label: 'New Task',
-                            icon: Icons.add_rounded,
+                            icon: BootstrapIcons.plus_circle,
                             color: AppColors.primary,
                             onTap: () => showModalBottomSheet(
                               context: context,
@@ -237,7 +238,7 @@ class HomeScreen extends ConsumerWidget {
                         Expanded(
                           child: _QuickActionTile(
                             label: 'Calendar',
-                            icon: Icons.calendar_month_outlined,
+                            icon: BootstrapIcons.calendar3,
                             color: const Color(0xFF22C55E),
                             onTap: () => AppSnackbar.show(
                                 context, AppStrings.comingSoon),
@@ -247,7 +248,7 @@ class HomeScreen extends ConsumerWidget {
                         Expanded(
                           child: _QuickActionTile(
                             label: 'Analytics',
-                            icon: Icons.bar_chart_rounded,
+                            icon: BootstrapIcons.bar_chart_line,
                             color: const Color(0xFFF59E0B),
                             onTap: () => AppSnackbar.show(
                                 context, AppStrings.comingSoon),
@@ -257,7 +258,7 @@ class HomeScreen extends ConsumerWidget {
                         Expanded(
                           child: _QuickActionTile(
                             label: 'Documents',
-                            icon: Icons.folder_outlined,
+                            icon: BootstrapIcons.folder2,
                             color: const Color(0xFF8B5CF6),
                             onTap: () => AppSnackbar.show(
                                 context, AppStrings.comingSoon),

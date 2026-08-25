@@ -11,10 +11,12 @@ class ConversationItem extends StatelessWidget {
     super.key,
     required this.conversation,
     required this.onTap,
+    this.onLongPress,
   });
 
   final Conversation conversation;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,7 @@ class ConversationItem extends StatelessWidget {
       button: true,
       child: ListTile(
         onTap: onTap,
+        onLongPress: onLongPress,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSizes.spaceM,
           vertical: AppSizes.spaceXS,

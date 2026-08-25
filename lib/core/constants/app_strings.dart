@@ -91,6 +91,8 @@ abstract final class AppStrings {
   static const String noResults = 'No results found.';
   static const String typeAMessage = 'Type a message…';
   static const String startConversation = 'Start Conversation';
+  static const String newConversation = 'New Conversation';
+  static const String searchContacts = 'Search contacts…';
   static const String noContactsFound = 'No contacts found.';
   static const String selectParticipant = 'Please select at least one participant.';
   static const String groupLimit = 'Group conversations are limited to 50 participants.';

@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:planpal/core/constants/app_sizes.dart';
 import 'package:planpal/core/constants/app_strings.dart';
@@ -70,7 +71,7 @@ class HelpScreen extends StatelessWidget {
           SizedBox(
             height: AppSizes.minTouchTarget,
             child: ElevatedButton.icon(
-              icon: const Icon(Icons.email_outlined),
+              icon: const Icon(BootstrapIcons.envelope),
               label: const Text(AppStrings.contactSupport),
               onPressed: () => _contactSupport(context),
             ),

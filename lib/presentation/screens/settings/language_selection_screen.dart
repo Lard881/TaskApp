@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:planpal/application/notifiers/preferences_notifier.dart';
@@ -46,7 +47,7 @@ class LanguageSelectionScreen extends ConsumerWidget {
                           .onSurface
                           .withOpacity(0.55))),
               trailing: isSelected
-                  ? const Icon(Icons.check_rounded, color: AppColors.primary)
+                  ? const Icon(BootstrapIcons.check2, color: AppColors.primary)
                   : null,
               onTap: () async {
                 await ref

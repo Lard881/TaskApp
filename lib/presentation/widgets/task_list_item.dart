@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:planpal/application/notifiers/user_notifier.dart';
@@ -96,8 +97,7 @@ class TaskListItem extends ConsumerWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: AppSizes.spaceL),
         color: Colors.red,
-        child: const Icon(Icons.delete_outline, color: Colors.white),
-      ),
+        child: const Icon(BootstrapIcons.trash, color: Colors.white),      ),
       confirmDismiss: (_) async => false, // we handle via onDismissed
       onUpdate: (details) {
         if (details.reached) onDismissed?.call();

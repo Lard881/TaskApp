@@ -7,28 +7,35 @@ import 'package:planpal/core/theme/app_theme.dart';
 
 /// Root application widget.
 ///
-/// Watches [themeModeProvider] so only the root rebuilds on theme change
-/// (Req 21.5). Wires go_router, theme, and localization delegates.
-class PlanPalApp extends ConsumerWidget {
+/// Uses [createAppRouter] (factory) so the router can watch [authProvider]
+/// via Riverpod and redirect automatically on auth state changes.
+class PlanPalApp extends ConsumerStatefulWidget {
   const PlanPalApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PlanPalApp> createState() => _PlanPalAppState();
+}
+
+class _PlanPalAppState extends ConsumerState<PlanPalApp> {
+  late final _router = createAppRouter(ref);
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'PlanPal',
       debugShowCheckedModeBanner: false,
 
-      // ── Theme ──────────────────────────────────────────────────────────────
+      // ── Theme ─────────────────────────────────────────────────────────────
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
 
-      // ── Router ─────────────────────────────────────────────────────────────
-      routerConfig: appRouter,
+      // ── Router ────────────────────────────────────────────────────────────
+      routerConfig: _router,
 
-      // ── Localisation ───────────────────────────────────────────────────────
+      // ── Localisation ──────────────────────────────────────────────────────
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

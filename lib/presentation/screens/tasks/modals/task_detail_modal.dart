@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:planpal/application/notifiers/task_notifier.dart';
@@ -42,7 +43,7 @@ class TaskDetailModal extends ConsumerWidget {
               ),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.close),
+                icon: const Icon(BootstrapIcons.x_lg),
                 onPressed: () => Navigator.of(context).pop(),
                 tooltip: 'Close',
               ),
@@ -63,7 +64,7 @@ class TaskDetailModal extends ConsumerWidget {
           // Due date/time + priority row
           Row(
             children: [
-              const Icon(Icons.calendar_today_outlined, size: 16),
+              const Icon(BootstrapIcons.calendar3, size: 16),
               const SizedBox(width: AppSizes.spaceXS),
               Text(
                 DateTimeFormatter.formatDueDate(
@@ -121,7 +122,7 @@ class TaskDetailModal extends ConsumerWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.edit_outlined),
+                  icon: const Icon(BootstrapIcons.pencil),
                   label: const Text(AppStrings.edit),
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -143,8 +144,8 @@ class TaskDetailModal extends ConsumerWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   icon: Icon(task.isCompleted
-                      ? Icons.refresh_rounded
-                      : Icons.check_rounded),
+                      ? BootstrapIcons.arrow_counterclockwise
+                      : BootstrapIcons.check2_circle),
                   label: Text(task.isCompleted
                       ? AppStrings.reopen
                       : AppStrings.markComplete),

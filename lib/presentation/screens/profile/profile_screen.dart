@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -59,7 +60,7 @@ class ProfileScreen extends ConsumerWidget {
                               fontSize: 18)),
                       const Spacer(),
                       IconButton(
-                        icon: const Icon(Icons.notifications_outlined),
+                        icon: const Icon(BootstrapIcons.bell),
                         onPressed: () {},
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -100,7 +101,7 @@ class ProfileScreen extends ConsumerWidget {
                             border: Border.all(
                                 color: Colors.white, width: 2),
                           ),
-                          child: const Icon(Icons.edit,
+                          child: const Icon(BootstrapIcons.pencil,
                               color: Colors.white, size: 12),
                         ),
                       ),
@@ -189,7 +190,7 @@ class ProfileScreen extends ConsumerWidget {
                   data: (items) => items.isEmpty
                       ? const EmptyStateWidget(
                           message: AppStrings.noRecentActivity,
-                          icon: Icons.history_rounded,
+                      icon: BootstrapIcons.clock_history,
                         )
                       : Column(
                           children: items
@@ -208,7 +209,7 @@ class ProfileScreen extends ConsumerWidget {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton.icon(
-                      icon: const Icon(Icons.settings_outlined,
+                      icon: const Icon(BootstrapIcons.gear,
                           size: 18),
                       label: const Text(
                           AppStrings.editProfileSettings),

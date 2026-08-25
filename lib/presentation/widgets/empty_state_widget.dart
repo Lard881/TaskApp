@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:planpal/core/constants/app_sizes.dart';
 
@@ -6,7 +7,7 @@ class EmptyStateWidget extends StatelessWidget {
   const EmptyStateWidget({
     super.key,
     required this.message,
-    this.icon = Icons.inbox_outlined,
+    this.icon = BootstrapIcons.inbox,
   });
 
   final String message;

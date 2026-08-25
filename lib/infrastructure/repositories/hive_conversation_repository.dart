@@ -106,6 +106,20 @@ class HiveConversationRepository implements ConversationRepository {
   }
 
   @override
+  Future<void> deleteConversation(String conversationId) async {
+    // Delete all messages belonging to this conversation
+    final messageKeys = _messageBox.values
+        .where((m) => m.conversationId == conversationId)
+        .map((m) => m.id)
+        .toList();
+    for (final key in messageKeys) {
+      await _messageBox.delete(key);
+    }
+    // Delete the conversation itself
+    await _conversationBox.delete(conversationId);
+  }
+
+  @override
   Future<void> markAllRead(String conversationId) async {
     // Mark all messages as read
     final toUpdate = _messageBox.values

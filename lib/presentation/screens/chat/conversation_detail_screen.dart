@@ -1,10 +1,14 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:planpal/application/notifiers/conversation_notifier.dart';
 import 'package:planpal/application/notifiers/user_notifier.dart';
 import 'package:planpal/core/constants/app_sizes.dart';
 import 'package:planpal/core/constants/app_strings.dart';
 import 'package:planpal/infrastructure/mock/mock_data.dart';
+import 'package:planpal/presentation/widgets/app_snackbar.dart';
+import 'package:planpal/presentation/widgets/confirmation_dialog.dart';
 import 'package:planpal/presentation/widgets/message_bubble.dart';
 
 class ConversationDetailScreen extends ConsumerStatefulWidget {
@@ -80,6 +84,50 @@ class _ConversationDetailScreenState
       appBar: AppBar(
         title: Text(conv?.name ?? 'Conversation'),
         leading: const BackButton(),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(BootstrapIcons.three_dots_vertical),
+            tooltip: 'More options',
+            onSelected: (value) {
+              if (value == 'delete') {
+                ConfirmationDialog.show(
+                  context: context,
+                  title: 'Delete conversation?',
+                  body:
+                      'This will permanently delete all messages. This cannot be undone.',
+                  confirmLabel: 'Delete',
+                  isDestructive: true,
+                  onConfirm: () async {
+                    await ref
+                        .read(conversationsProvider.notifier)
+                        .deleteConversation(widget.conversationId);
+                    if (mounted) {
+                      context.pop();
+                      AppSnackbar.show(
+                          context, 'Conversation deleted.');
+                    }
+                  },
+                );
+              }
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(BootstrapIcons.trash,
+                        color: Colors.red, size: 18),
+                    SizedBox(width: 10),
+                    Text(
+                      'Delete conversation',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -158,7 +206,7 @@ class _ConversationDetailScreenState
                   label: 'Send message',
                   button: true,
                   child: IconButton(
-                    icon: const Icon(Icons.send_rounded),
+                    icon: const Icon(BootstrapIcons.send),
                     onPressed: _send,
                     color: Theme.of(context).colorScheme.primary,
                   ),

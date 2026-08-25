@@ -23,6 +23,9 @@ abstract class ConversationRepository {
   /// Sets [unreadCount] to 0 for the conversation with [conversationId].
   Future<void> markAllRead(String conversationId);
 
+  /// Permanently deletes a conversation and all its messages.
+  Future<void> deleteConversation(String conversationId);
+
   /// Emits the full conversation list whenever any conversation changes.
   Stream<List<Conversation>> watchConversations();
 

@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:planpal/core/constants/app_colors.dart';
 import 'package:planpal/core/constants/app_sizes.dart';
@@ -18,7 +19,7 @@ class PriorityBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isCompleted) {
       return const Icon(
-        Icons.check_circle_rounded,
+        BootstrapIcons.check_circle_fill,
         color: AppColors.success,
         size: AppSizes.iconSizeM,
       );

@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:planpal/application/notifiers/preferences_notifier.dart';
@@ -20,7 +21,7 @@ class NotificationPreferencesScreen extends ConsumerWidget {
               children: [
                 _NotifToggle(
                   label: AppStrings.taskReminders,
-                  icon: Icons.task_alt_outlined,
+                  icon: BootstrapIcons.bell_fill,
                   value: prefs.notifyTaskReminders,
                   onChanged: (v) async {
                     try {
@@ -34,7 +35,7 @@ class NotificationPreferencesScreen extends ConsumerWidget {
                 ),
                 _NotifToggle(
                   label: AppStrings.dueDateAlerts,
-                  icon: Icons.calendar_today_outlined,
+                  icon: BootstrapIcons.calendar_event,
                   value: prefs.notifyDueDateAlerts,
                   onChanged: (v) async {
                     try {
@@ -48,7 +49,7 @@ class NotificationPreferencesScreen extends ConsumerWidget {
                 ),
                 _NotifToggle(
                   label: AppStrings.chatMessages,
-                  icon: Icons.chat_bubble_outline_rounded,
+                  icon: BootstrapIcons.chat_dots,
                   value: prefs.notifyChatMessages,
                   onChanged: (v) async {
                     try {
@@ -62,7 +63,7 @@ class NotificationPreferencesScreen extends ConsumerWidget {
                 ),
                 _NotifToggle(
                   label: AppStrings.weeklySummary,
-                  icon: Icons.bar_chart_rounded,
+                  icon: BootstrapIcons.graph_up,
                   value: prefs.notifyWeeklySummary,
                   onChanged: (v) async {
                     try {

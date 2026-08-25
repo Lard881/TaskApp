@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:planpal/application/notifiers/task_filter_notifier.dart';
@@ -131,7 +132,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                     const Center(child: CircularProgressIndicator()),
                 error: (e, _) => EmptyStateWidget(
                   message: e.toString(),
-                  icon: Icons.error_outline,
+                  icon: BootstrapIcons.exclamation_circle,
                 ),
                 data: (allTasks) {
                   final filtered = filterTasks(allTasks, activeFilter);
@@ -140,7 +141,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                   if (sorted.isEmpty) {
                     return const EmptyStateWidget(
                       message: AppStrings.noTasksEmpty,
-                      icon: Icons.task_alt_outlined,
+                      icon: BootstrapIcons.clipboard_check,
                     );
                   }
 
@@ -164,7 +165,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                             color: Colors.red.shade400,
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: const Icon(Icons.delete_outline,
+                          child: const Icon(BootstrapIcons.trash,
                               color: Colors.white),
                         ),
                         child: _TaskRow(
@@ -184,7 +185,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddSheet,
         backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(BootstrapIcons.plus_lg, color: Colors.white),
         label: const Text(
           '+ Add Task',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
@@ -227,7 +228,7 @@ class _TopBar extends ConsumerWidget {
                   TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
           const Spacer(),
           IconButton(
-              icon: const Icon(Icons.notifications_outlined),
+              icon: const Icon(BootstrapIcons.bell),
               onPressed: () {},
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints()),
@@ -298,7 +299,7 @@ class _TaskRow extends ConsumerWidget {
                     : Colors.transparent,
               ),
               child: task.isCompleted
-                  ? const Icon(Icons.check,
+                  ? const Icon(BootstrapIcons.check,
                       color: Colors.white, size: 14)
                   : null,
             ),
@@ -326,7 +327,7 @@ class _TaskRow extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.access_time_rounded,
+                      Icon(BootstrapIcons.clock,
                           size: 11, color: Colors.grey.shade400),
                       const SizedBox(width: 3),
                       Text(
@@ -466,7 +467,7 @@ class _SortModal extends ConsumerWidget {
                       fontSize: 16, fontWeight: FontWeight.w700)),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.close),
+                icon: const Icon(BootstrapIcons.x_lg),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
@@ -512,7 +513,7 @@ class _TaskContextMenu extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            leading: const Icon(Icons.edit_outlined),
+            leading: const Icon(BootstrapIcons.pencil),
             title: const Text(AppStrings.edit),
             onTap: () {
               Navigator.of(context).pop();
@@ -529,8 +530,8 @@ class _TaskContextMenu extends ConsumerWidget {
           ),
           ListTile(
             leading: Icon(task.isCompleted
-                ? Icons.refresh_rounded
-                : Icons.check_circle_outline_rounded),
+                ? BootstrapIcons.arrow_counterclockwise
+                : BootstrapIcons.check_circle),
             title: Text(task.isCompleted
                 ? AppStrings.reopen
                 : AppStrings.markComplete),
@@ -556,7 +557,7 @@ class _TaskContextMenu extends ConsumerWidget {
           ),
           ListTile(
             leading:
-                const Icon(Icons.delete_outline, color: Colors.red),
+                const Icon(BootstrapIcons.trash, color: Colors.red),
             title: const Text(AppStrings.delete,
                 style: TextStyle(color: Colors.red)),
             onTap: () {

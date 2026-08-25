@@ -1,20 +1,17 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:planpal/application/providers/hive_providers.dart';
+import 'package:planpal/application/notifiers/auth_notifier.dart';
 import 'package:planpal/core/constants/app_colors.dart';
 import 'package:planpal/core/constants/app_sizes.dart';
 import 'package:planpal/core/constants/app_strings.dart';
-import 'package:planpal/infrastructure/hive_init.dart';
-import 'package:planpal/presentation/widgets/app_snackbar.dart';
 
-/// Entry point screen shown while Hive initialises.
+/// Splash screen — shown while Supabase resolves the auth session.
 ///
-/// Sequence (Req 28):
-/// 1. Display logo + name for minimum 500ms
-/// 2. Run [initHive] (open boxes, register adapters, seed data)
-/// 3. Navigate to /home with a fade transition ≤ 400ms
-/// 4. If init exceeds 3s, navigate anyway and show "Could not load" snackbar
+/// Sequence:
+/// 1. Show logo with fade-in for minimum 1 second
+/// 2. Watch [authProvider] — once it resolves, the router redirect
+///    takes over automatically (no manual navigation needed here)
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -30,8 +27,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   void initState() {
     super.initState();
-
-    // Fade-in animation for the logo
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -42,48 +37,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
     _fadeController.forward();
 
-    _runInitSequence();
+    // The router watches authProvider and will redirect automatically.
+    // We just need to ensure a minimum display time so the splash
+    // doesn't flash for < 1 second.
+    _ensureMinDisplay();
   }
 
-  Future<void> _runInitSequence() async {
-    // Enforce minimum display time of 500ms (Req 28.1)
-    final minDisplay = Future<void>.delayed(const Duration(milliseconds: 500));
-
-    // Enforce 3-second timeout (Req 28.5)
-    bool timedOut = false;
-    HiveInitResult? result;
-
-    try {
-      result = await initHive().timeout(
-        const Duration(seconds: 3),
-        onTimeout: () {
-          timedOut = true;
-          // Return a dummy — we navigate anyway and show the snackbar
-          throw TimeoutException();
-        },
-      );
-    } on TimeoutException {
-      timedOut = true;
-    } catch (_) {
-      timedOut = true;
-    }
-
-    // Wait for minimum display time before navigating
-    await minDisplay;
-
-    if (!mounted) return;
-
-    if (result != null) {
-      // Store repositories in providers so the rest of the app can access them
-      ref.read(hiveInitResultProvider.notifier).state = result;
-    }
-
-    if (timedOut && mounted) {
-      AppSnackbar.show(context, AppStrings.dataLoadFailed);
-    }
-
+  Future<void> _ensureMinDisplay() async {
+    await Future.delayed(const Duration(milliseconds: 1000));
+    // After min display, trigger authProvider to load so the router
+    // can pick up the resolved state and navigate.
     if (mounted) {
-      context.go('/home');
+      ref.read(authProvider);
     }
   }
 
@@ -112,7 +77,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   borderRadius: BorderRadius.circular(AppSizes.radiusL),
                 ),
                 child: const Icon(
-                  Icons.check_circle_rounded,
+                  BootstrapIcons.check_circle,
                   color: AppColors.primary,
                   size: 48,
                 ),
@@ -144,5 +109,4 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 }
 
-/// Internal exception used to signal a timeout during Hive init.
-class TimeoutException implements Exception {}
+

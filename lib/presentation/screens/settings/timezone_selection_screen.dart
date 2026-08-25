@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:planpal/application/notifiers/preferences_notifier.dart';
@@ -83,7 +84,7 @@ class _TimeZoneSelectionScreenState
               controller: _searchCtrl,
               decoration: const InputDecoration(
                 hintText: 'Search time zones…',
-                prefixIcon: Icon(Icons.search_rounded),
+                prefixIcon: Icon(BootstrapIcons.search),
               ),
               onChanged: (v) => setState(() => _query = v.toLowerCase()),
             ),
@@ -112,7 +113,7 @@ class _TimeZoneSelectionScreenState
                                 .onSurface
                                 .withOpacity(0.55))),
                     trailing: isSelected
-                        ? const Icon(Icons.check_rounded,
+                        ? const Icon(BootstrapIcons.check2,
                             color: AppColors.primary)
                         : null,
                     onTap: () async {

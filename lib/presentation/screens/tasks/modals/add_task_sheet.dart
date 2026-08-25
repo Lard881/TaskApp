@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:planpal/application/notifiers/task_notifier.dart';
@@ -138,7 +139,7 @@ class _AddTaskSheetState extends ConsumerState<AddTaskSheet> {
                       value: _dueDate != null
                           ? '${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}'
                           : 'Select',
-                      icon: Icons.calendar_today_outlined,
+                      icon: BootstrapIcons.calendar3,
                       error: _errors['dueDate'],
                       onTap: _pickDate,
                     ),
@@ -150,7 +151,7 @@ class _AddTaskSheetState extends ConsumerState<AddTaskSheet> {
                       value: _dueTime != null
                           ? _dueTime!.format(context)
                           : 'Select',
-                      icon: Icons.access_time_rounded,
+                      icon: BootstrapIcons.clock,
                       error: _errors['dueTime'],
                       onTap: _pickTime,
                     ),

@@ -1,0 +1,452 @@
+{
+  "@@locale": "en",
+
+  "appName": "PlanPal",
+  "@appName": { "description": "The application name" },
+
+  "appVersion": "1.0.0",
+  "@appVersion": { "description": "Application version string" },
+
+  "appDescription": "PlanPal helps you manage tasks, track progress, and collaborate with your team — all in one place.",
+  "@appDescription": { "description": "Short app description shown on the About screen (≤150 chars)" },
+
+  "goodMorning": "Good Morning",
+  "@goodMorning": { "description": "Time-based salutation for 05:00–11:59" },
+
+  "goodAfternoon": "Good Afternoon",
+  "@goodAfternoon": { "description": "Time-based salutation for 12:00–17:59" },
+
+  "goodEvening": "Good Evening",
+  "@goodEvening": { "description": "Time-based salutation for 18:00–04:59" },
+
+  "taskCountSubtitle": "{count, plural, =0{You have no tasks due today.} =1{You have 1 task due today.} other{You have {count} tasks due today.}}",
+  "@taskCountSubtitle": {
+    "description": "Subtitle on Home screen showing tasks due today",
+    "placeholders": {
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+
+  "navHome": "Home",
+  "@navHome": { "description": "Bottom nav label — Home tab" },
+
+  "navTasks": "Tasks",
+  "@navTasks": { "description": "Bottom nav label — Tasks tab" },
+
+  "navChat": "Chat",
+  "@navChat": { "description": "Bottom nav label — Chat tab" },
+
+  "navProfile": "Profile",
+  "@navProfile": { "description": "Bottom nav label — Profile tab" },
+
+  "navSettings": "Settings",
+  "@navSettings": { "description": "Bottom nav label — Settings tab" },
+
+  "todaysTasks": "Today's Tasks",
+  "@todaysTasks": { "description": "Section heading on Home screen" },
+
+  "viewAll": "View All",
+  "@viewAll": { "description": "Link to see all tasks due today" },
+
+  "noTasksToday": "No tasks due today. Enjoy your day!",
+  "@noTasksToday": { "description": "Empty state in Today's Tasks section" },
+
+  "newTask": "New Task",
+  "@newTask": { "description": "Quick action label" },
+
+  "calendar": "Calendar",
+  "@calendar": { "description": "Quick action label" },
+
+  "analytics": "Analytics",
+  "@analytics": { "description": "Quick action label" },
+
+  "documents": "Documents",
+  "@documents": { "description": "Quick action label" },
+
+  "comingSoon": "Coming soon!",
+  "@comingSoon": { "description": "Snackbar message for unimplemented features" },
+
+  "performanceOverview": "Performance Overview",
+  "@performanceOverview": { "description": "Section heading on Home screen" },
+
+  "completed": "Completed",
+  "@completed": { "description": "Metric tile label and filter tab" },
+
+  "inProgress": "In Progress",
+  "@inProgress": { "description": "Metric tile label" },
+
+  "overdue": "Overdue",
+  "@overdue": { "description": "Metric tile label" },
+
+  "productivity": "Productivity",
+  "@productivity": { "description": "Metric tile label" },
+
+  "myTasks": "My Tasks",
+  "@myTasks": { "description": "Tasks screen heading" },
+
+  "noTasksEmpty": "No tasks here. Add one!",
+  "@noTasksEmpty": { "description": "Empty state on Tasks screen" },
+
+  "filterAll": "All",
+  "@filterAll": { "description": "Filter tab label" },
+
+  "filterToday": "Today",
+  "@filterToday": { "description": "Filter tab label" },
+
+  "filterUpcoming": "Upcoming",
+  "@filterUpcoming": { "description": "Filter tab label" },
+
+  "filterCompleted": "Completed",
+  "@filterCompleted": { "description": "Filter tab label" },
+
+  "sortBy": "Sort by",
+  "@sortBy": { "description": "Sort modal heading" },
+
+  "sortDueDateAsc": "Due Date (Earliest First)",
+  "@sortDueDateAsc": { "description": "Sort option" },
+
+  "sortDueDateDesc": "Due Date (Latest First)",
+  "@sortDueDateDesc": { "description": "Sort option" },
+
+  "sortPriorityHighLow": "Priority (High to Low)",
+  "@sortPriorityHighLow": { "description": "Sort option" },
+
+  "sortPriorityLowHigh": "Priority (Low to High)",
+  "@sortPriorityLowHigh": { "description": "Sort option" },
+
+  "sortNameAZ": "Name (A–Z)",
+  "@sortNameAZ": { "description": "Sort option" },
+
+  "sortNameZA": "Name (Z–A)",
+  "@sortNameZA": { "description": "Sort option" },
+
+  "taskNameLabel": "Task Name",
+  "@taskNameLabel": { "description": "Form field label" },
+
+  "dueDateLabel": "Due Date",
+  "@dueDateLabel": { "description": "Form field label" },
+
+  "dueTimeLabel": "Due Time",
+  "@dueTimeLabel": { "description": "Form field label" },
+
+  "priorityLabel": "Priority",
+  "@priorityLabel": { "description": "Form field label" },
+
+  "assigneeLabel": "Assignee (optional)",
+  "@assigneeLabel": { "description": "Form field label" },
+
+  "descriptionLabel": "Description (optional)",
+  "@descriptionLabel": { "description": "Form field label" },
+
+  "saveTask": "Save Task",
+  "@saveTask": { "description": "Primary button on Add Task sheet" },
+
+  "saveChanges": "Save Changes",
+  "@saveChanges": { "description": "Primary button on Edit Task sheet" },
+
+  "cancel": "Cancel",
+  "@cancel": { "description": "Secondary dismiss button" },
+
+  "allDay": "All day",
+  "@allDay": { "description": "Shown when a task has no due time" },
+
+  "priorityHigh": "High",
+  "@priorityHigh": { "description": "Priority badge label" },
+
+  "priorityMedium": "Medium",
+  "@priorityMedium": { "description": "Priority badge label" },
+
+  "priorityLow": "Low",
+  "@priorityLow": { "description": "Priority badge label" },
+
+  "taskNameRequired": "Task name is required.",
+  "@taskNameRequired": { "description": "Inline validation error" },
+
+  "taskNameTooLong": "Task name must be 100 characters or fewer.",
+  "@taskNameTooLong": { "description": "Inline validation error" },
+
+  "dueDateRequired": "Due date is required.",
+  "@dueDateRequired": { "description": "Inline validation error" },
+
+  "dueTimeRequired": "Due time is required.",
+  "@dueTimeRequired": { "description": "Inline validation error" },
+
+  "priorityRequired": "Priority is required.",
+  "@priorityRequired": { "description": "Inline validation error" },
+
+  "markComplete": "Mark Complete",
+  "@markComplete": { "description": "Task action button label" },
+
+  "reopen": "Reopen",
+  "@reopen": { "description": "Task action button label" },
+
+  "edit": "Edit",
+  "@edit": { "description": "Context menu and button label" },
+
+  "delete": "Delete",
+  "@delete": { "description": "Context menu and button label" },
+
+  "taskAdded": "Task added successfully.",
+  "@taskAdded": { "description": "Snackbar confirmation" },
+
+  "taskUpdated": "Task updated successfully.",
+  "@taskUpdated": { "description": "Snackbar confirmation" },
+
+  "taskDeleted": "Task deleted.",
+  "@taskDeleted": { "description": "Snackbar confirmation" },
+
+  "taskMarkedComplete": "Task marked as complete.",
+  "@taskMarkedComplete": { "description": "Snackbar confirmation" },
+
+  "taskReopened": "Task reopened.",
+  "@taskReopened": { "description": "Snackbar confirmation" },
+
+  "deleteTaskConfirm": "Delete this task?",
+  "@deleteTaskConfirm": { "description": "Confirmation dialog title" },
+
+  "deleteTaskBody": "This action cannot be undone.",
+  "@deleteTaskBody": { "description": "Confirmation dialog body" },
+
+  "conversations": "Conversations",
+  "@conversations": { "description": "Chat screen heading" },
+
+  "searchConversations": "Search conversations…",
+  "@searchConversations": { "description": "Search bar placeholder text" },
+
+  "noConversations": "No conversations yet.",
+  "@noConversations": { "description": "Empty state on Chat screen" },
+
+  "noResults": "No results found.",
+  "@noResults": { "description": "Empty state when search returns nothing" },
+
+  "typeAMessage": "Type a message…",
+  "@typeAMessage": { "description": "Message input placeholder" },
+
+  "startConversation": "Start Conversation",
+  "@startConversation": { "description": "Button label on New Conversation sheet" },
+
+  "newConversation": "New Conversation",
+  "@newConversation": { "description": "Sheet title for starting a new conversation" },
+
+  "searchContacts": "Search contacts…",
+  "@searchContacts": { "description": "Search field placeholder on New Conversation sheet" },
+
+  "noContactsFound": "No contacts found.",
+  "@noContactsFound": { "description": "Empty state on contacts list" },
+
+  "selectParticipant": "Please select at least one participant.",
+  "@selectParticipant": { "description": "Inline validation error on New Conversation sheet" },
+
+  "groupLimit": "Group conversations are limited to 50 participants.",
+  "@groupLimit": { "description": "Inline validation error when too many participants selected" },
+
+  "tasksCompleted": "Tasks Completed",
+  "@tasksCompleted": { "description": "Profile stats tile label" },
+
+  "activeProjects": "Active Projects",
+  "@activeProjects": { "description": "Profile stats tile label" },
+
+  "teamMembers": "Team Members",
+  "@teamMembers": { "description": "Profile stats tile label" },
+
+  "recentActivity": "Recent Activity",
+  "@recentActivity": { "description": "Profile section heading" },
+
+  "noRecentActivity": "No recent activity.",
+  "@noRecentActivity": { "description": "Empty state in Recent Activity section" },
+
+  "editProfileSettings": "Edit Profile Settings",
+  "@editProfileSettings": { "description": "Button label on Profile screen" },
+
+  "avatarUpdateFailed": "Could not update avatar. Please try again.",
+  "@avatarUpdateFailed": { "description": "Snackbar error" },
+
+  "firstNameLabel": "First Name",
+  "@firstNameLabel": { "description": "Profile form field label" },
+
+  "lastNameLabel": "Last Name",
+  "@lastNameLabel": { "description": "Profile form field label" },
+
+  "roleLabel": "Role / Title (optional)",
+  "@roleLabel": { "description": "Profile form field label" },
+
+  "emailLabel": "Email",
+  "@emailLabel": { "description": "Profile form field label" },
+
+  "phoneLabel": "Phone Number (optional)",
+  "@phoneLabel": { "description": "Profile form field label" },
+
+  "save": "Save",
+  "@save": { "description": "Primary button on profile edit sheet" },
+
+  "profileUpdated": "Profile updated successfully.",
+  "@profileUpdated": { "description": "Snackbar confirmation" },
+
+  "profileSaveFailed": "Could not save profile. Please try again.",
+  "@profileSaveFailed": { "description": "Snackbar error" },
+
+  "firstNameRequired": "First name is required.",
+  "@firstNameRequired": { "description": "Inline validation error" },
+
+  "lastNameRequired": "Last name is required.",
+  "@lastNameRequired": { "description": "Inline validation error" },
+
+  "emailRequired": "Email is required.",
+  "@emailRequired": { "description": "Inline validation error" },
+
+  "emailInvalid": "Enter a valid email address.",
+  "@emailInvalid": { "description": "Inline validation error" },
+
+  "settings": "Settings",
+  "@settings": { "description": "Settings screen heading" },
+
+  "accountSettings": "Account Settings",
+  "@accountSettings": { "description": "Settings section header" },
+
+  "preferences": "Preferences",
+  "@preferences": { "description": "Settings section header" },
+
+  "supportLegals": "Support & Legals",
+  "@supportLegals": { "description": "Settings section header" },
+
+  "personalProfile": "Personal Profile",
+  "@personalProfile": { "description": "Settings list item label" },
+
+  "notificationPreferences": "Notification Preferences",
+  "@notificationPreferences": { "description": "Settings list item label" },
+
+  "securityPrivacy": "Security & Privacy",
+  "@securityPrivacy": { "description": "Settings list item label" },
+
+  "interfaceTheme": "Interface Theme",
+  "@interfaceTheme": { "description": "Settings list item label" },
+
+  "appLanguage": "App Language",
+  "@appLanguage": { "description": "Settings list item label" },
+
+  "timeZone": "Time Zone",
+  "@timeZone": { "description": "Settings list item label" },
+
+  "helpSupport": "Help & Support",
+  "@helpSupport": { "description": "Settings list item label" },
+
+  "about": "About",
+  "@about": { "description": "Settings list item label" },
+
+  "rateOurApp": "Rate Our App",
+  "@rateOurApp": { "description": "Settings list item label" },
+
+  "logOut": "Log Out",
+  "@logOut": { "description": "Settings log out button label" },
+
+  "logOutConfirm": "Are you sure you want to log out?",
+  "@logOutConfirm": { "description": "Confirmation dialog body for log out" },
+
+  "loggedOut": "You have been logged out.",
+  "@loggedOut": { "description": "Snackbar confirmation after log out" },
+
+  "logOutFailed": "Log out failed. Please try again.",
+  "@logOutFailed": { "description": "Snackbar error when log out fails" },
+
+  "themeLight": "Light",
+  "@themeLight": { "description": "Theme option label" },
+
+  "themeDark": "Dark",
+  "@themeDark": { "description": "Theme option label" },
+
+  "themeSystem": "System Default",
+  "@themeSystem": { "description": "Theme option label" },
+
+  "taskReminders": "Task Reminders",
+  "@taskReminders": { "description": "Notification toggle label" },
+
+  "dueDateAlerts": "Due Date Alerts",
+  "@dueDateAlerts": { "description": "Notification toggle label" },
+
+  "chatMessages": "Chat Messages",
+  "@chatMessages": { "description": "Notification toggle label" },
+
+  "weeklySummary": "Weekly Summary",
+  "@weeklySummary": { "description": "Notification toggle label" },
+
+  "prefSaveFailed": "Could not save preference. Please try again.",
+  "@prefSaveFailed": { "description": "Snackbar error when preference save fails" },
+
+  "changePassword": "Change Password",
+  "@changePassword": { "description": "Security screen list item label" },
+
+  "biometricLogin": "Biometric Login",
+  "@biometricLogin": { "description": "Security screen toggle label" },
+
+  "dataPrivacyPolicy": "Data Privacy Policy",
+  "@dataPrivacyPolicy": { "description": "Security screen list item label" },
+
+  "currentPassword": "Current Password",
+  "@currentPassword": { "description": "Change password form field label" },
+
+  "newPassword": "New Password",
+  "@newPassword": { "description": "Change password form field label" },
+
+  "confirmPassword": "Confirm New Password",
+  "@confirmPassword": { "description": "Change password form field label" },
+
+  "passwordChanged": "Password changed successfully.",
+  "@passwordChanged": { "description": "Snackbar confirmation" },
+
+  "passwordMismatch": "Passwords do not match.",
+  "@passwordMismatch": { "description": "Inline validation error" },
+
+  "passwordLength": "Password must be between 8 and 64 characters.",
+  "@passwordLength": { "description": "Inline validation error" },
+
+  "passwordIncorrect": "Current password is incorrect.",
+  "@passwordIncorrect": { "description": "Inline validation error" },
+
+  "passwordSaveFailed": "Could not update password. Please try again.",
+  "@passwordSaveFailed": { "description": "Snackbar error" },
+
+  "contactSupport": "Contact Support",
+  "@contactSupport": { "description": "Help screen button label" },
+
+  "supportEmail": "support@planpal.app",
+  "@supportEmail": { "description": "Support email address" },
+
+  "noEmailApp": "No email app found. Please email support@planpal.app directly.",
+  "@noEmailApp": { "description": "Snackbar error when no email client is available" },
+
+  "helpLoadFailed": "Could not load help content. Please try again later.",
+  "@helpLoadFailed": { "description": "Error message on Help screen when FAQ fails to load" },
+
+  "storeOpenFailed": "Unable to open the store. Please try again later.",
+  "@storeOpenFailed": { "description": "Snackbar error when app store cannot be opened" },
+
+  "somethingWentWrong": "Something went wrong. Please try again.",
+  "@somethingWentWrong": { "description": "Generic error snackbar" },
+
+  "changesSaveFailed": "Changes could not be saved. Please try again.",
+  "@changesSaveFailed": { "description": "Snackbar error for failed local storage write" },
+
+  "dataLoadFailed": "Could not load saved data. Starting fresh.",
+  "@dataLoadFailed": { "description": "Snackbar shown when Hive init times out or fails" },
+
+  "faqTitle": "Frequently Asked Questions",
+  "@faqTitle": { "description": "Help screen section heading" },
+
+  "activityCreated": "created",
+  "@activityCreated": { "description": "Verb used in activity feed: Task X created" },
+
+  "activityUpdated": "updated",
+  "@activityUpdated": { "description": "Verb used in activity feed: Task X updated" },
+
+  "activityCompleted": "completed",
+  "@activityCompleted": { "description": "Verb used in activity feed: Task X completed" },
+
+  "deletedTask": "[Deleted task]",
+  "@deletedTask": { "description": "Placeholder when referenced task no longer exists" },
+
+  "noMessagesYet": "No messages yet. Say hi!",
+  "@noMessagesYet": { "description": "Empty state in conversation detail" },
+
+  "quickActions": "Quick Actions",
+  "@quickActions": { "description": "Home screen section heading" }
+}

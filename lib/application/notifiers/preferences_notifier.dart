@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:planpal/application/providers/hive_providers.dart';
+import 'package:planpal/application/providers/supabase_providers.dart';
 import 'package:planpal/domain/models/app_preferences.dart';
 import 'package:planpal/infrastructure/repositories/preferences_repository.dart';
 
@@ -12,11 +12,9 @@ class PreferencesNotifier extends AsyncNotifier<AppPreferences> {
   Future<AppPreferences> build() async {
     _repo = ref.watch(preferencesRepositoryProvider);
 
-    // Keep in sync with Hive stream
+    // Live updates via Supabase Realtime
     _repo.watch().listen((prefs) {
-      if (state is! AsyncLoading) {
-        state = AsyncData(prefs);
-      }
+      if (state is! AsyncLoading) state = AsyncData(prefs);
     });
 
     return _repo.get();

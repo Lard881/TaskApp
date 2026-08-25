@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:planpal/core/constants/app_colors.dart';
 import 'package:planpal/core/constants/app_sizes.dart';
@@ -59,11 +60,11 @@ class ActivityItemWidget extends StatelessWidget {
   IconData get _icon {
     switch (activity.type) {
       case ActivityType.created:
-        return Icons.add_circle_outline_rounded;
+        return BootstrapIcons.plus_circle;
       case ActivityType.updated:
-        return Icons.edit_outlined;
+        return BootstrapIcons.pencil;
       case ActivityType.completed:
-        return Icons.check_circle_outline_rounded;
+        return BootstrapIcons.check_circle;
     }
   }
 

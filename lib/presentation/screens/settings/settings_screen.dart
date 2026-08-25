@@ -1,6 +1,8 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:planpal/application/notifiers/auth_notifier.dart';
 import 'package:planpal/application/notifiers/preferences_notifier.dart';
 import 'package:planpal/application/notifiers/user_notifier.dart';
 import 'package:planpal/core/constants/app_colors.dart';
@@ -52,7 +54,7 @@ class SettingsScreen extends ConsumerWidget {
                           fontWeight: FontWeight.w800, fontSize: 18)),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.notifications_outlined),
+                    icon: const Icon(BootstrapIcons.bell),
                     onPressed: () {},
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -92,13 +94,13 @@ class SettingsScreen extends ConsumerWidget {
                   _SectionLabel('ACCOUNT SETTINGS'),
                   _SettingsCard(children: [
                     _SettingsRow(
-                      icon: Icons.person_outline_rounded,
+                      icon: BootstrapIcons.person,
                       label: AppStrings.personalProfile,
                       onTap: () => context.go('/profile'),
                     ),
                     _divider(),
                     _SettingsRow(
-                      icon: Icons.notifications_outlined,
+                      icon: BootstrapIcons.bell,
                       label: AppStrings.notificationPreferences,
                       badgeText: notifOn ? 'On' : 'Off',
                       badgeColor: notifOn
@@ -109,7 +111,7 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                     _divider(),
                     _SettingsRow(
-                      icon: Icons.lock_outline_rounded,
+                      icon: BootstrapIcons.shield_lock,
                       label: AppStrings.securityPrivacy,
                       onTap: () =>
                           context.go('/settings/security'),
@@ -122,14 +124,14 @@ class SettingsScreen extends ConsumerWidget {
                   _SectionLabel('PREFERENCES'),
                   _SettingsCard(children: [
                     _SettingsRow(
-                      icon: Icons.palette_outlined,
+                      icon: BootstrapIcons.palette,
                       label: AppStrings.interfaceTheme,
                       badgeText: themeName,
                       onTap: () => _showThemeModal(context, ref),
                     ),
                     _divider(),
                     _SettingsRow(
-                      icon: Icons.language_rounded,
+                      icon: BootstrapIcons.translate,
                       label: AppStrings.appLanguage,
                       badgeText: langName,
                       onTap: () =>
@@ -137,7 +139,7 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                     _divider(),
                     _SettingsRow(
-                      icon: Icons.schedule_rounded,
+                      icon: BootstrapIcons.globe,
                       label: AppStrings.timeZone,
                       onTap: () =>
                           context.go('/settings/timezone'),
@@ -150,20 +152,20 @@ class SettingsScreen extends ConsumerWidget {
                   _SectionLabel('SUPPORT & LEGALS'),
                   _SettingsCard(children: [
                     _SettingsRow(
-                      icon: Icons.help_outline_rounded,
+                      icon: BootstrapIcons.question_circle,
                       label: AppStrings.helpSupport,
                       onTap: () => context.go('/settings/help'),
                     ),
                     _divider(),
                     _SettingsRow(
-                      icon: Icons.info_outline_rounded,
+                      icon: BootstrapIcons.info_circle,
                       label: 'About PlanPal v2.4',
                       onTap: () =>
                           context.go('/settings/about'),
                     ),
                     _divider(),
                     _SettingsRow(
-                      icon: Icons.star_outline_rounded,
+                      icon: BootstrapIcons.star,
                       label: AppStrings.rateOurApp,
                       onTap: () => AppSnackbar.show(
                           context, AppStrings.comingSoon),
@@ -177,7 +179,7 @@ class SettingsScreen extends ConsumerWidget {
                     width: double.infinity,
                     height: 50,
                     child: OutlinedButton.icon(
-                      icon: const Icon(Icons.logout_rounded,
+                      icon: const Icon(BootstrapIcons.box_arrow_right,
                           color: AppColors.logOutRed),
                       label: const Text(
                         '⊣  Log Out Account',
@@ -196,7 +198,7 @@ class SettingsScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: () => _confirmLogOut(context),
+                      onPressed: () => _confirmLogOut(context, ref),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -242,16 +244,16 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmLogOut(BuildContext context) {
+  void _confirmLogOut(BuildContext context, WidgetRef ref) {
     ConfirmationDialog.show(
       context: context,
       title: AppStrings.logOut,
       body: AppStrings.logOutConfirm,
       confirmLabel: AppStrings.logOut,
       isDestructive: true,
-      onConfirm: () {
-        context.go('/home');
-        AppSnackbar.show(context, AppStrings.loggedOut);
+      onConfirm: () async {
+        await ref.read(authProvider.notifier).signOut();
+        // Router redirect handles navigation to /login automatically
       },
     );
   }
@@ -365,7 +367,7 @@ class _SettingsRow extends StatelessWidget {
                 ),
               ),
             if (badgeText != null) const SizedBox(width: 6),
-            Icon(Icons.chevron_right_rounded,
+            Icon(BootstrapIcons.chevron_right,
                 color: Colors.grey.shade400, size: 20),
           ],
         ),
@@ -401,11 +403,11 @@ class _ThemeModal extends ConsumerWidget {
               style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSizes.spaceM),
           _option(context, ref, current, ThemeMode.light,
-              AppStrings.themeLight, Icons.light_mode_outlined),
+              AppStrings.themeLight, BootstrapIcons.sun),
           _option(context, ref, current, ThemeMode.dark,
-              AppStrings.themeDark, Icons.dark_mode_outlined),
+              AppStrings.themeDark, BootstrapIcons.moon),
           _option(context, ref, current, ThemeMode.system,
-              AppStrings.themeSystem, Icons.brightness_auto_outlined),
+              AppStrings.themeSystem, BootstrapIcons.display),
           const SizedBox(height: AppSizes.spaceM),
         ],
       ),
@@ -424,7 +426,7 @@ class _ThemeModal extends ConsumerWidget {
       leading: Icon(icon),
       title: Text(label),
       trailing: current == mode
-          ? const Icon(Icons.check_rounded, color: AppColors.primary)
+          ? const Icon(BootstrapIcons.check2, color: AppColors.primary)
           : null,
       onTap: () async {
         await ref

@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:planpal/core/constants/app_sizes.dart';
 
@@ -37,7 +38,7 @@ class SettingsListItem extends StatelessWidget {
         ),
         trailing: trailing ??
             Icon(
-              Icons.chevron_right_rounded,
+              BootstrapIcons.chevron_right,
               color: Theme.of(context)
                   .colorScheme
                   .onSurface

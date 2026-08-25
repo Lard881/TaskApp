@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:planpal/core/constants/app_sizes.dart';
 import 'package:planpal/core/constants/app_strings.dart';
@@ -15,7 +16,7 @@ class SecurityPrivacyScreen extends StatelessWidget {
       body: ListView(
         children: [
           SettingsListItem(
-            icon: Icons.lock_outline_rounded,
+            icon: BootstrapIcons.shield_lock,
             label: AppStrings.changePassword,
             onTap: () => showModalBottomSheet(
               context: context,
@@ -29,7 +30,7 @@ class SecurityPrivacyScreen extends StatelessWidget {
           ),
           _BiometricToggle(),
           SettingsListItem(
-            icon: Icons.policy_outlined,
+            icon: BootstrapIcons.file_text,
             label: AppStrings.dataPrivacyPolicy,
             onTap: () => AppSnackbar.show(context, AppStrings.comingSoon),
           ),
@@ -52,7 +53,7 @@ class _BiometricToggleState extends State<_BiometricToggle> {
     return Semantics(
       label: 'Biometric login toggle',
       child: SwitchListTile(
-        secondary: const Icon(Icons.fingerprint_rounded, size: AppSizes.iconSizeL),
+        secondary: const Icon(BootstrapIcons.fingerprint, size: AppSizes.iconSizeL),
         title: const Text(
           AppStrings.biometricLogin,
           style: TextStyle(fontSize: AppSizes.fontBody, fontWeight: FontWeight.w500),
