@@ -1,6 +1,7 @@
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:planpal/application/notifiers/auth_notifier.dart';
 import 'package:planpal/core/constants/app_colors.dart';
 import 'package:planpal/core/constants/app_sizes.dart';
@@ -137,6 +138,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch auth state — navigate when sign in succeeds
+    ref.listen<AsyncValue<AppAuthState>>(authProvider, (_, next) {
+      next.whenOrNull(
+        data: (state) {
+          if (state == AppAuthState.authenticated) {
+            context.go('/home');
+          } else if (state == AppAuthState.onboarding) {
+            context.go('/onboarding');
+          }
+        },
+      );
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FF),
       body: SafeArea(

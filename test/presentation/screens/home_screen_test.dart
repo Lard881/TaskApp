@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:planpal/application/notifiers/auth_notifier.dart';
 import 'package:planpal/application/notifiers/task_notifier.dart';
 import 'package:planpal/application/notifiers/user_notifier.dart';
 import 'package:planpal/domain/enums/task_priority.dart';
@@ -26,7 +27,12 @@ class _FakeUserNotifier extends UserNotifier {
   Future<User?> build() async => _user;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+class _FakeAuthNotifier extends AuthNotifier {
+  @override
+  Future<AppAuthState> build() async => AppAuthState.authenticated;
+}
+
+
 
 Task makeTask({
   String id = 't1',
@@ -70,6 +76,7 @@ Widget buildHome({List<Task> tasks = const [], User? user = _user}) {
     overrides: [
       tasksProvider.overrideWith(() => _FakeTaskNotifier(tasks)),
       currentUserProvider.overrideWith(() => _FakeUserNotifier(user)),
+      authProvider.overrideWith(() => _FakeAuthNotifier()),
     ],
     child: MaterialApp.router(routerConfig: _router()),
   );

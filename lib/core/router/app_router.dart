@@ -56,8 +56,8 @@ String? _redirect(AppAuthState authState, String location) {
   }
 }
 
-/// Creates the app router. Takes [ref] so it can watch [authProvider].
-GoRouter createAppRouter(Ref ref) {
+/// Creates the app router. Takes [WidgetRef] so it can watch [authProvider].
+GoRouter createAppRouter(WidgetRef ref) {
   // Listenable that rebuilds the router when auth state changes
   final authListenable = _AuthStateListenable(ref);
 
@@ -200,10 +200,20 @@ GoRouter createAppRouter(Ref ref) {
 // ── Auth listenable ───────────────────────────────────────────────────────────
 
 /// Notifies GoRouter to re-evaluate redirects when auth state changes.
+/// Disposes itself when the underlying ProviderSubscription is cancelled.
 class _AuthStateListenable extends ChangeNotifier {
-  _AuthStateListenable(Ref ref) {
-    ref.listen<AsyncValue<AppAuthState>>(authProvider, (_, __) {
-      notifyListeners();
-    });
+  _AuthStateListenable(WidgetRef ref) {
+    _sub = ref.listenManual<AsyncValue<AppAuthState>>(
+      authProvider,
+      (_, __) => notifyListeners(),
+    );
+  }
+
+  late final ProviderSubscription<AsyncValue<AppAuthState>> _sub;
+
+  @override
+  void dispose() {
+    _sub.close();
+    super.dispose();
   }
 }

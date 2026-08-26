@@ -1,41 +1,42 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:planpal/application/providers/supabase_providers.dart';
 import 'package:planpal/infrastructure/repositories/auth_repository.dart';
 
-// ── Auth state enum ───────────────────────────────────────────────────────────
+// ── Auth state ────────────────────────────────────────────────────────────────
 
 enum AppAuthState {
-  /// Initial — waiting for session check
   unknown,
-
-  /// Signed in and has a profile + workspace
   authenticated,
-
-  /// Signed in but no workspace yet (first login)
   onboarding,
-
-  /// Not signed in
   unauthenticated,
 }
 
-// ── Auth notifier ─────────────────────────────────────────────────────────────
+// ── Notifier ──────────────────────────────────────────────────────────────────
 
-/// Manages the global authentication state.
-/// Watches Supabase auth stream and exposes sign-in/sign-out methods.
 class AuthNotifier extends AsyncNotifier<AppAuthState> {
   late final AuthRepository _repo;
+  StreamSubscription<AuthState>? _authSub; // Fix 3 — track subscription
 
   @override
   Future<AppAuthState> build() async {
     _repo = ref.watch(authRepositoryProvider);
 
-    // Listen to Supabase auth state changes
-    _repo.authStateChanges.listen((authState) async {
+    // Fix 3 — cancel any previous subscription before creating a new one
+    await _authSub?.cancel();
+
+    // Fix 3 — store subscription so we can cancel it on rebuild/dispose
+    _authSub = _repo.authStateChanges.listen((authState) async {
       final event = authState.event;
       if (event == AuthChangeEvent.signedIn ||
           event == AuthChangeEvent.tokenRefreshed ||
           event == AuthChangeEvent.userUpdated) {
+        // Fix 1 — wait a moment for the DB trigger to create the workspace
+        if (event == AuthChangeEvent.signedIn) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
         state = const AsyncLoading();
         state = AsyncData(await _resolveState());
       } else if (event == AuthChangeEvent.signedOut) {
@@ -43,15 +44,21 @@ class AuthNotifier extends AsyncNotifier<AppAuthState> {
       }
     });
 
+    // Dispose the subscription when the notifier is destroyed
+    ref.onDispose(() {
+      _authSub?.cancel();
+      _authSub = null;
+    });
+
     return _resolveState();
   }
 
-  /// Resolves auth state based on current session.
+  // ── Resolve state ─────────────────────────────────────────────────────────
+
   Future<AppAuthState> _resolveState() async {
     final user = _repo.currentUser;
     if (user == null) return AppAuthState.unauthenticated;
 
-    // Check if user has a workspace
     try {
       final client = ref.read(supabaseClientProvider);
       final workspaces = await client
@@ -64,77 +71,114 @@ class AuthNotifier extends AsyncNotifier<AppAuthState> {
         return AppAuthState.onboarding;
       }
       return AppAuthState.authenticated;
+    } on AuthException {
+      // Fix 5 — real auth errors should NOT be treated as authenticated
+      return AppAuthState.unauthenticated;
     } catch (_) {
-      // Network error — if we have a session treat as authenticated
-      return AppAuthState.authenticated;
+      // Only non-auth errors (network, etc.) fall back to authenticated
+      // to avoid logging out users on temporary connectivity issues
+      if (_repo.currentSession != null) {
+        return AppAuthState.authenticated;
+      }
+      return AppAuthState.unauthenticated;
     }
   }
 
   // ── Sign in with email ────────────────────────────────────────────────────
 
-  Future<void> signInWithEmail({
+  Future<String?> signInWithEmail({
     required String email,
     required String password,
   }) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       await _repo.signInWithEmail(email: email, password: password);
-      return _resolveState();
-    });
+      // Fix 2 — auth stream will update state via the listener above
+      // We don't resolve state here — the signedIn event handles it
+      return null; // null = success
+    } on AuthException catch (e) {
+      state = const AsyncData(AppAuthState.unauthenticated);
+      return _friendlyError(e.message); // Fix 2 — return error message
+    } catch (e) {
+      state = const AsyncData(AppAuthState.unauthenticated);
+      return 'Something went wrong. Please try again.';
+    }
   }
 
   // ── Sign up with email ────────────────────────────────────────────────────
 
-  Future<void> signUpWithEmail({
+  Future<String?> signUpWithEmail({
     required String email,
     required String password,
     String? firstName,
     String? lastName,
   }) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       await _repo.signUpWithEmail(
         email: email,
         password: password,
         firstName: firstName,
         lastName: lastName,
       );
-      return _resolveState();
-    });
+      // Fix 1 — after sign up, auth stream fires signedIn
+      // The 1500ms delay in the stream listener gives the DB trigger
+      // time to create the workspace before we query workspace_members
+      return null; // null = success
+    } on AuthException catch (e) {
+      state = const AsyncData(AppAuthState.unauthenticated);
+      return _friendlyError(e.message);
+    } catch (e) {
+      state = const AsyncData(AppAuthState.unauthenticated);
+      return 'Something went wrong. Please try again.';
+    }
   }
 
-  // ── Sign in with Google ───────────────────────────────────────────────────
+  // ── Social sign in ────────────────────────────────────────────────────────
 
-  Future<void> signInWithGoogle() async {
+  Future<String?> signInWithGoogle() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       final success = await _repo.signInWithGoogle();
-      if (!success) return AppAuthState.unauthenticated;
-      return _resolveState();
-    });
+      if (!success) {
+        state = const AsyncData(AppAuthState.unauthenticated);
+        return null; // user cancelled — not an error
+      }
+      return null;
+    } on AuthException catch (e) {
+      state = const AsyncData(AppAuthState.unauthenticated);
+      return _friendlyError(e.message);
+    } catch (e) {
+      state = const AsyncData(AppAuthState.unauthenticated);
+      return 'Google sign in failed. Please try again.';
+    }
   }
 
-  // ── Sign in with Apple ────────────────────────────────────────────────────
-
-  Future<void> signInWithApple() async {
+  Future<String?> signInWithApple() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       final success = await _repo.signInWithApple();
-      if (!success) return AppAuthState.unauthenticated;
-      return _resolveState();
-    });
+      if (!success) {
+        state = const AsyncData(AppAuthState.unauthenticated);
+        return null;
+      }
+      return null;
+    } on AuthException catch (e) {
+      state = const AsyncData(AppAuthState.unauthenticated);
+      return _friendlyError(e.message);
+    } catch (e) {
+      state = const AsyncData(AppAuthState.unauthenticated);
+      return 'Apple sign in failed. Please try again.';
+    }
   }
 
-  // ── Reset password ────────────────────────────────────────────────────────
+  // ── Password ──────────────────────────────────────────────────────────────
 
   Future<void> resetPassword(String email) =>
       _repo.resetPassword(email);
 
-  // ── Update password ───────────────────────────────────────────────────────
-
-  Future<void> updatePassword(String newPassword) async {
-    await _repo.updatePassword(newPassword);
-  }
+  Future<void> updatePassword(String newPassword) =>
+      _repo.updatePassword(newPassword);
 
   // ── Sign out ──────────────────────────────────────────────────────────────
 
@@ -143,18 +187,40 @@ class AuthNotifier extends AsyncNotifier<AppAuthState> {
     state = const AsyncData(AppAuthState.unauthenticated);
   }
 
-  // ── Mark onboarding complete ──────────────────────────────────────────────
+  // ── Onboarding ────────────────────────────────────────────────────────────
 
-  /// Called after the user finishes onboarding (workspace created).
   void markOnboardingComplete() {
     state = const AsyncData(AppAuthState.authenticated);
   }
+
+  // ── Error helper ──────────────────────────────────────────────────────────
+
+  String _friendlyError(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('invalid login') || lower.contains('invalid credentials')) {
+      return 'Incorrect email or password.';
+    }
+    if (lower.contains('email not confirmed')) {
+      return 'Please verify your email first. Check your inbox.';
+    }
+    if (lower.contains('already registered') || lower.contains('already exists')) {
+      return 'An account with this email already exists.';
+    }
+    if (lower.contains('password') && lower.contains('short')) {
+      return 'Password must be at least 8 characters.';
+    }
+    if (lower.contains('rate limit')) {
+      return 'Too many attempts. Please wait a moment and try again.';
+    }
+    return raw;
+  }
 }
+
+// ── Provider ──────────────────────────────────────────────────────────────────
 
 final authProvider =
     AsyncNotifierProvider<AuthNotifier, AppAuthState>(AuthNotifier.new);
 
-/// Convenience: just the current Supabase user.
 final currentSupabaseUserProvider = Provider<User?>((ref) {
   ref.watch(authProvider);
   return Supabase.instance.client.auth.currentUser;

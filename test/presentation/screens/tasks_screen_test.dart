@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:planpal/application/notifiers/auth_notifier.dart';
 import 'package:planpal/application/notifiers/task_notifier.dart';
 import 'package:planpal/core/constants/app_strings.dart';
 import 'package:planpal/domain/enums/filter_tab.dart';
@@ -58,10 +59,16 @@ GoRouter _router({FilterTab? filter}) => GoRouter(
       ],
     );
 
+class _FakeAuthNotifier extends AuthNotifier {
+  @override
+  Future<AppAuthState> build() async => AppAuthState.authenticated;
+}
+
 Widget buildTasksScreen(List<Task> tasks, {FilterTab? filter}) {
   return ProviderScope(
     overrides: [
       tasksProvider.overrideWith(() => _FakeTaskNotifier(tasks)),
+      authProvider.overrideWith(() => _FakeAuthNotifier()),
     ],
     child: MaterialApp.router(
       routerConfig: _router(filter: filter),

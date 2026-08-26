@@ -29,7 +29,7 @@ class _ForgotPasswordScreenState
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final err = ProfileValidator.validateEmail(_emailCtrl.text);
     setState(() => _emailError = err);
     if (err != null) return;

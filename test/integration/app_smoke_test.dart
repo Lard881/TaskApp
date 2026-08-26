@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:planpal/application/notifiers/auth_notifier.dart';
 import 'package:planpal/application/notifiers/conversation_notifier.dart';
 import 'package:planpal/application/notifiers/preferences_notifier.dart';
 import 'package:planpal/application/notifiers/task_notifier.dart';
@@ -31,65 +32,55 @@ import 'package:planpal/presentation/screens/tasks/tasks_screen.dart';
 // Must extend the REAL notifier class so overrideWith() passes the type check.
 
 class _FakeTaskNotifier extends TaskNotifier {
-  // Tasks stored here before the notifier is mounted into a ProviderContainer.
-  // seed() stores them in this list; build() reads from it.
-  // This avoids the LateInitializationError caused by setting state= before
-  // the notifier's _element is initialised by Riverpod.
+  // Tasks stored before the notifier is mounted.
+  // build() reads from _pending — never call state= before mounting.
   final List<Task> _pending = [];
-  bool _seeded = false;
 
   @override
   Future<List<Task>> build() async => List<Task>.from(_pending);
 
+  /// Safe to call before or after mounting — stores tasks for next build().
   void seed(List<Task> tasks) {
     _pending
       ..clear()
       ..addAll(tasks);
-    _seeded = true;
-
-    // Only set state directly if already mounted (element initialised)
-    try {
-      state = AsyncData(List<Task>.from(_pending));
-    } catch (_) {
-      // Notifier not yet mounted — build() will pick up _pending on first call
-    }
   }
 
   @override
   Future<void> addTask(Task task) async {
-    _tasks.add(task);
-    state = AsyncData(List<Task>.from(_tasks));
+    _pending.add(task);
+    state = AsyncData(List<Task>.from(_pending));
   }
 
   @override
   Future<void> updateTask(Task task) async {
-    final idx = _tasks.indexWhere((t) => t.id == task.id);
-    if (idx != -1) _tasks[idx] = task;
-    state = AsyncData(List<Task>.from(_tasks));
+    final idx = _pending.indexWhere((t) => t.id == task.id);
+    if (idx != -1) _pending[idx] = task;
+    state = AsyncData(List<Task>.from(_pending));
   }
 
   @override
   Future<void> deleteTask(String id) async {
-    _tasks.removeWhere((t) => t.id == id);
-    state = AsyncData(List<Task>.from(_tasks));
+    _pending.removeWhere((t) => t.id == id);
+    state = AsyncData(List<Task>.from(_pending));
   }
 
   @override
   Future<void> markComplete(String id) async {
-    final idx = _tasks.indexWhere((t) => t.id == id);
+    final idx = _pending.indexWhere((t) => t.id == id);
     if (idx != -1) {
-      _tasks[idx] = _tasks[idx].copyWith(status: TaskStatus.completed);
+      _pending[idx] = _pending[idx].copyWith(status: TaskStatus.completed);
     }
-    state = AsyncData(List<Task>.from(_tasks));
+    state = AsyncData(List<Task>.from(_pending));
   }
 
   @override
   Future<void> reopenTask(String id) async {
-    final idx = _tasks.indexWhere((t) => t.id == id);
+    final idx = _pending.indexWhere((t) => t.id == id);
     if (idx != -1) {
-      _tasks[idx] = _tasks[idx].copyWith(status: TaskStatus.inProgress);
+      _pending[idx] = _pending[idx].copyWith(status: TaskStatus.inProgress);
     }
-    state = AsyncData(List<Task>.from(_tasks));
+    state = AsyncData(List<Task>.from(_pending));
   }
 }
 
@@ -170,6 +161,11 @@ class _FakeConversationNotifier extends ConversationNotifier {
   Future<List<Conversation>> build() async => [];
 }
 
+class _FakeAuthNotifier extends AuthNotifier {
+  @override
+  Future<AppAuthState> build() async => AppAuthState.authenticated;
+}
+
 // ── Shared instances ──────────────────────────────────────────────────────────
 // Created once. _FakeTaskNotifier.seed() is safe to call before mounting
 // because it guards against the LateInitializationError.
@@ -178,6 +174,7 @@ final _taskNotifier = _FakeTaskNotifier();
 final _userNotifier = _FakeUserNotifier();
 final _prefsNotifier = _FakePreferencesNotifier();
 final _convNotifier = _FakeConversationNotifier();
+final _authNotifier = _FakeAuthNotifier();
 
 // ── Router ────────────────────────────────────────────────────────────────────
 
@@ -253,6 +250,7 @@ Widget buildApp() {
       currentUserProvider.overrideWith(() => _userNotifier),
       preferencesProvider.overrideWith(() => _prefsNotifier),
       conversationsProvider.overrideWith(() => _convNotifier),
+      authProvider.overrideWith(() => _authNotifier),
     ],
     child: MaterialApp.router(
       theme: AppTheme.light,
@@ -266,8 +264,8 @@ Widget buildApp() {
 
 void main() {
   setUp(() {
-    // Clear pending tasks before each test — safe before widget mounting
-    _taskNotifier._pending.clear();
+    // Reset tasks before each test — safe before widget mounting
+    _taskNotifier.seed([]);
   });
 
   group('App smoke — initial render', () {

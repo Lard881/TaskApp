@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -53,13 +52,24 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<bool> signInWithGoogle() async {
+    // Fix 6 — Google Sign In does not work on web without additional setup
+    if (kIsWeb) {
+      throw AuthException(
+        'Google sign in is not supported on web yet. Please use email/password.',
+      );
+    }
+
+    // On iOS, clientId comes from GoogleService-Info.plist — pass null
+    // On Android, we need the web client ID as serverClientId
     final googleSignIn = GoogleSignIn(
-      clientId: Platform.isIOS ? null : SupabaseConfig.googleWebClientId,
-      serverClientId: SupabaseConfig.googleWebClientId,
+      serverClientId: SupabaseConfig.googleWebClientId ==
+              'YOUR_GOOGLE_WEB_CLIENT_ID.apps.googleusercontent.com'
+          ? null // placeholder not set yet — will fail gracefully
+          : SupabaseConfig.googleWebClientId,
     );
 
     final googleUser = await googleSignIn.signIn();
-    if (googleUser == null) return false; // user cancelled
+    if (googleUser == null) return false;
 
     final googleAuth = await googleUser.authentication;
     final idToken = googleAuth.idToken;
@@ -75,10 +85,15 @@ class SupabaseAuthRepository implements AuthRepository {
     return true;
   }
 
-  // ── Apple ─────────────────────────────────────────────────────────────────
-
   @override
   Future<bool> signInWithApple() async {
+    // Fix 6 — Apple Sign In does not work on web
+    if (kIsWeb) {
+      throw AuthException(
+        'Apple sign in is not supported on web yet. Please use email/password.',
+      );
+    }
+
     final credential = await SignInWithApple.getAppleIDCredential(
       scopes: [
         AppleIDAuthorizationScopes.email,
