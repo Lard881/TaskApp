@@ -1,0 +1,110 @@
+name: planpal
+description: "PlanPal — A Flutter task management application."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigation
+  go_router: ^14.6.3
+
+  # Local storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Image picker (avatar selection)
+  image_picker: ^1.1.2
+
+  # File picker (documents and files)
+  file_picker: ^8.1.4
+
+  # Internationalisation
+  intl: ^0.20.2
+
+  # Unique IDs
+  uuid: ^4.5.1
+
+  # HTTP calls to the Express backend
+  http: ^1.2.2
+
+  # Persist auth token locally
+  shared_preferences: ^2.3.1
+
+  # URL launching (email, app store)
+  url_launcher: ^6.3.1
+
+  # Supabase
+  supabase_flutter: ^2.8.4
+
+  # Auth — social sign-in
+  google_sign_in: ^6.2.2
+  sign_in_with_apple: ^6.1.4
+
+  # Local notifications
+  flutter_local_notifications: ^18.0.1
+
+  # Biometric auth
+  local_auth: ^2.3.0
+
+  # Secure storage for credentials
+  flutter_secure_storage: ^9.2.2
+
+  # In-app review
+  in_app_review: ^2.0.9
+
+  # Crypto (invite code hashing)
+  crypto: ^3.0.3
+
+  # Icons
+  cupertino_icons: ^1.0.8
+  bootstrap_icons: ^1.12.0
+  flutter_launcher_icons: ^0.14.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Code generation
+  build_runner: ^2.4.13
+  riverpod_generator: ^2.6.5
+  # hive_generator removed — TypeAdapters are written manually to avoid
+  # the source_gen ^1.0.0 vs ^2.0.0 conflict with riverpod_generator
+
+  # Testing
+  mocktail: ^1.0.4
+  # glados removed — incompatible with riverpod_generator due to transitive
+  # analyzer/test_api version conflict. Property tests use flutter_test instead.
+
+  # Lints
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true  # enables flutter gen-l10n for ARB files
+
+  assets:
+    - assets/images/
+
+
+# Flutter Launcher Icons Configuration
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon.png"
+  adaptive_icon_background: "#2196F3"
+  adaptive_icon_foreground: "assets/icon.png"
+  windows:
+    generate: true
+    image_path: "assets/icon.png"
+    icon_size: 48

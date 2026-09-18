@@ -1,0 +1,431 @@
+import 'dart:io';
+
+import 'package:bootstrap_icons/bootstrap_icons.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:planpal/application/notifiers/conversation_notifier.dart';
+import 'package:planpal/application/notifiers/user_notifier.dart';
+import 'package:planpal/core/constants/app_sizes.dart';
+import 'package:planpal/core/constants/app_strings.dart';
+import 'package:planpal/domain/models/message.dart';
+import 'package:planpal/infrastructure/repositories/api_conversation_repository.dart';
+import 'package:planpal/infrastructure/services/media_service.dart';
+import 'package:planpal/presentation/widgets/app_snackbar.dart';
+import 'package:planpal/presentation/widgets/confirmation_dialog.dart';
+import 'package:planpal/presentation/widgets/message_bubble.dart';
+import 'package:planpal/presentation/widgets/skeleton_loader.dart';
+import 'package:uuid/uuid.dart';
+
+class ConversationDetailScreen extends ConsumerStatefulWidget {
+  const ConversationDetailScreen(
+      {super.key, required this.conversationId});
+  final String conversationId;
+
+  @override
+  ConsumerState<ConversationDetailScreen> createState() =>
+      _ConversationDetailScreenState();
+}
+
+class _ConversationDetailScreenState
+    extends ConsumerState<ConversationDetailScreen> {
+  final _inputController = TextEditingController();
+  final _scrollController = ScrollController();
+  final _mediaService = MediaService();
+  bool _isUploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Mark all messages as read when opening (Req 14.10)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(conversationsProvider.notifier)
+          .markRead(widget.conversationId);
+    });
+  }
+
+  @override
+  void dispose() {
+    _inputController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _send() async {
+    final text = _inputController.text.trim();
+    if (text.isEmpty) return;
+    _inputController.clear();
+    await ref
+        .read(conversationsProvider.notifier)
+        .sendMessage(widget.conversationId, text);
+    _scrollToBottom();
+  }
+
+  Future<void> _sendMedia({
+    required File file,
+    required String caption,
+  }) async {
+    if (_isUploading) return;
+
+    setState(() => _isUploading = true);
+
+    try {
+      // Get the repository to upload media
+      final convsNotifier = ref.read(conversationsProvider.notifier);
+      final workspaceId = ref.read(currentUserProvider).valueOrNull?.id ?? '';
+      final repository = ApiConversationRepository(workspaceId: workspaceId);
+
+      // Check file size
+      if (!_mediaService.isFileSizeValid(file)) {
+        if (mounted) {
+          AppSnackbar.show(
+            context,
+            'File size exceeds 10MB limit',
+            isError: true,
+          );
+        }
+        return;
+      }
+
+      // Upload file to Supabase Storage
+      final fileName = file.path.split('/').last;
+      final mediaUrl = await repository.uploadMedia(
+        file: file,
+        conversationId: widget.conversationId,
+        fileName: fileName,
+      );
+
+      // Determine message type
+      final messageType = _mediaService.getMessageType(fileName);
+
+      // Send message with media
+      final currentUserId = ref.read(currentUserProvider).valueOrNull?.id ?? '';
+      final message = Message(
+        id: const Uuid().v4(),
+        conversationId: widget.conversationId,
+        senderId: currentUserId,
+        text: caption,
+        sentAt: DateTime.now(),
+        isRead: false,
+        type: messageType,
+        mediaUrl: mediaUrl,
+        mediaName: fileName,
+      );
+
+      await convsNotifier.sendMessageWithMedia(message);
+      _scrollToBottom();
+
+      if (mounted) {
+        AppSnackbar.show(context, 'Media sent successfully');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.show(
+          context,
+          'Failed to send media: $e',
+          isError: true,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploading = false);
+      }
+    }
+  }
+
+  Future<void> _showMediaOptions() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(BootstrapIcons.camera),
+              title: const Text('Take Photo'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final file = await _mediaService.pickImage(source: ImageSource.camera);
+                if (file != null) {
+                  _showCaptionDialog(file);
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(BootstrapIcons.image),
+              title: const Text('Choose from Gallery'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final file = await _mediaService.pickImage(source: ImageSource.gallery);
+                if (file != null) {
+                  _showCaptionDialog(file);
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(BootstrapIcons.file_earmark_text),
+              title: const Text('Choose Document'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final file = await _mediaService.pickDocument();
+                if (file != null) {
+                  _showCaptionDialog(file);
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(BootstrapIcons.paperclip),
+              title: const Text('Choose File'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final file = await _mediaService.pickFile();
+                if (file != null) {
+                  _showCaptionDialog(file);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showCaptionDialog(File file) async {
+    final captionController = TextEditingController();
+    final fileName = file.path.split('/').last;
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Caption'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'File: $fileName',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            Text(
+              'Size: ${_mediaService.getFormattedFileSize(file)}',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: captionController,
+              decoration: const InputDecoration(
+                hintText: 'Add a caption (optional)',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Send'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      await _sendMedia(
+        file: file,
+        caption: captionController.text.trim(),
+      );
+    }
+
+    captionController.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final convsAsync = ref.watch(conversationsProvider);
+    final conv = convsAsync.valueOrNull?.firstWhere(
+      (c) => c.id == widget.conversationId,
+      orElse: () => throw StateError('Not found'),
+    );
+
+    final messagesAsync =
+        ref.watch(messagesProvider(widget.conversationId));
+    final allUsersAsync = ref.watch(allUsersProvider);
+    final allUsers = allUsersAsync.valueOrNull ?? [];
+    final isGroup = conv?.isGroup ?? false;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(conv?.name ?? 'Conversation'),
+        leading: const BackButton(),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(BootstrapIcons.three_dots_vertical),
+            tooltip: 'More options',
+            onSelected: (value) {
+              if (value == 'delete') {
+                ConfirmationDialog.show(
+                  context: context,
+                  title: 'Delete conversation?',
+                  body:
+                      'This will permanently delete all messages. This cannot be undone.',
+                  confirmLabel: 'Delete',
+                  isDestructive: true,
+                  onConfirm: () async {
+                    await ref
+                        .read(conversationsProvider.notifier)
+                        .deleteConversation(widget.conversationId);
+                    if (context.mounted) {
+                      context.pop();
+                      AppSnackbar.show(
+                          context, 'Conversation deleted.');
+                    }
+                  },
+                );
+              }
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(BootstrapIcons.trash,
+                        color: Colors.red, size: 18),
+                    SizedBox(width: 10),
+                    Text(
+                      'Delete conversation',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Message list
+          Expanded(
+            child: messagesAsync.when(
+              loading: () =>
+                  const SkeletonChatBubbleList(count: 6),
+              error: (_, _) => const Center(
+                  child: Text('Could not load messages.')),
+              data: (messages) {
+                _scrollToBottom();
+                if (messages.isEmpty) {
+                  return const Center(
+                      child: Text('No messages yet. Say hi!'));
+                }
+                return ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppSizes.spaceS),
+                  itemCount: messages.length,
+                  itemBuilder: (_, i) {
+                    final msg = messages[i];
+                    final currentUserId = ref.watch(currentUserProvider).valueOrNull?.id;
+                    final isOwn =
+                        currentUserId != null && msg.senderId == currentUserId;
+                    final sender = allUsers
+                        .where((u) => u.id == msg.senderId)
+                        .firstOrNull;
+                    return MessageBubble(
+                      message: msg,
+                      isOwn: isOwn,
+                      sender: sender,
+                      showSenderName: isGroup && !isOwn,
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+
+          // Input bar
+          Container(
+            padding: EdgeInsets.only(
+              left: AppSizes.spaceM,
+              right: AppSizes.spaceS,
+              top: AppSizes.spaceS,
+              bottom: AppSizes.spaceM +
+                  MediaQuery.of(context).viewInsets.bottom,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // Attachment button
+                Semantics(
+                  label: 'Attach media',
+                  button: true,
+                  child: IconButton(
+                    icon: const Icon(BootstrapIcons.paperclip),
+                    onPressed: _isUploading ? null : _showMediaOptions,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: TextField(
+                    controller: _inputController,
+                    textCapitalization:
+                        TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      hintText: AppStrings.typeAMessage,
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onSubmitted: (_) => _send(),
+                  ),
+                ),
+                Semantics(
+                  label: 'Send message',
+                  button: true,
+                  child: IconButton(
+                    icon: _isUploading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(BootstrapIcons.send),
+                    onPressed: _isUploading ? null : _send,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

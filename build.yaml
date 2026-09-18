@@ -1,0 +1,13 @@
+# build.yaml — configures build_runner code generation targets
+targets:
+  $default:
+    builders:
+      # Run riverpod_generator on application layer providers and notifiers
+      riverpod_generator:
+        generate_for:
+          include:
+            - lib/application/providers/*.dart
+            - lib/application/notifiers/*.dart
+
+# Note: Hive TypeAdapters are written manually (no hive_generator) to avoid
+# the source_gen version conflict with riverpod_generator.
