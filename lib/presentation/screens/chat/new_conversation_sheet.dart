@@ -55,12 +55,13 @@ class _NewConversationSheetState extends ConsumerState<NewConversationSheet> {
   }
 
   Future<void> _start() async {
+    // Only allow selecting ONE person for 1-on-1 chat
     if (_selectedIds.isEmpty) {
       setState(() => _error = AppStrings.selectParticipant);
       return;
     }
-    if (_selectedIds.length > 50) {
-      setState(() => _error = AppStrings.groupLimit);
+    if (_selectedIds.length > 1) {
+      setState(() => _error = 'Please select only one person for 1-on-1 chat');
       return;
     }
 
@@ -134,7 +135,7 @@ class _NewConversationSheetState extends ConsumerState<NewConversationSheet> {
                             ),
                           ),
                           Text(
-                            AppStrings.newConversation,
+                            'New 1-on-1 Chat',
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(fontWeight: FontWeight.w700),
                           ),
@@ -340,8 +341,9 @@ class _NewConversationSheetState extends ConsumerState<NewConversationSheet> {
                               if (isSelected) {
                                 _selectedIds.remove(member.userId);
                               } else {
-                                if (_selectedIds.length >= 50) {
-                                  _error = AppStrings.groupLimit;
+                                // Only allow selecting one person for 1-on-1 chat
+                                if (_selectedIds.isNotEmpty) {
+                                  _error = 'You can only select one person for 1-on-1 chat';
                                   return;
                                 }
                                 _selectedIds.add(member.userId);

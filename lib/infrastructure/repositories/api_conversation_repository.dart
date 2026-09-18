@@ -135,15 +135,15 @@ class ApiConversationRepository implements ConversationRepository {
         messageType = 'text';
     }
 
-    final body = {
+    final body = <String, dynamic>{
       'text': message.text,
       'type': messageType,
     };
 
     // Add media fields if present
-    if (message.mediaUrl != null) body['mediaUrl'] = message.mediaUrl;
-    if (message.mediaName != null) body['mediaName'] = message.mediaName;
-    if (message.thumbnailUrl != null) body['thumbnailUrl'] = message.thumbnailUrl;
+    if (message.mediaUrl != null) body['mediaUrl'] = message.mediaUrl!;
+    if (message.mediaName != null) body['mediaName'] = message.mediaName!;
+    if (message.thumbnailUrl != null) body['thumbnailUrl'] = message.thumbnailUrl!;
 
     final response = await http.post(
       Uri.parse('${ApiConfig.baseUrl}/conversations/${message.conversationId}/messages'),
