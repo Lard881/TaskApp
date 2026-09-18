@@ -14,7 +14,7 @@ import 'package:planpal/domain/models/workspace.dart';
 import 'package:planpal/presentation/screens/home/widgets/analytics_dashboard_sheet.dart';
 import 'package:planpal/presentation/screens/home/widgets/documents_notes_sheet.dart';
 import 'package:planpal/presentation/screens/shell/app_shell.dart';
-import 'package:planpal/presentation/screens/tasks/modals/add_task_sheet.dart';
+import 'package:planpal/presentation/screens/tasks/modals/add_workspace_task_sheet.dart';
 import 'package:planpal/presentation/widgets/app_snackbar.dart';
 import 'package:planpal/presentation/widgets/avatar_widget.dart';
 import 'package:planpal/presentation/widgets/skeleton_loader.dart';
@@ -285,7 +285,9 @@ class WorkspaceHubScreen extends ConsumerWidget {
                                 context: context,
                                 isScrollControlled: true,
                                 backgroundColor: Colors.transparent,
-                                builder: (_) => const AddTaskSheet(),
+                                builder: (_) => AddWorkspaceTaskSheet(
+                                  preselectedWorkspaceId: ws.id,
+                                ),
                               );
                             },
                           ),
@@ -474,7 +476,9 @@ class WorkspaceHubScreen extends ConsumerWidget {
                               context: context,
                               isScrollControlled: true,
                               backgroundColor: Colors.transparent,
-                              builder: (_) => const AddTaskSheet(),
+                              builder: (_) => AddWorkspaceTaskSheet(
+                                preselectedWorkspaceId: ws.id,
+                              ),
                             );
                           },
                           borderRadius: BorderRadius.circular(18),

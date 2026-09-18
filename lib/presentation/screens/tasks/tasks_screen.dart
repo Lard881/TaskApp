@@ -12,7 +12,8 @@ import 'package:planpal/domain/enums/filter_tab.dart';
 import 'package:planpal/domain/enums/sort_option.dart';
 import 'package:planpal/domain/enums/task_priority.dart';
 import 'package:planpal/domain/models/task.dart';
-import 'package:planpal/presentation/screens/tasks/modals/add_task_sheet.dart';
+import 'package:planpal/presentation/screens/tasks/modals/add_personal_task_sheet.dart';
+import 'package:planpal/presentation/screens/tasks/modals/add_workspace_task_sheet.dart';
 import 'package:planpal/presentation/screens/tasks/modals/edit_task_sheet.dart';
 import 'package:planpal/presentation/screens/tasks/modals/task_detail_modal.dart';
 import 'package:planpal/presentation/widgets/app_snackbar.dart';
@@ -52,14 +53,25 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     );
   }
 
-  void _showAddSheet() {
+  void _showAddPersonalTaskSheet() {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => const AddTaskSheet(),
+      builder: (_) => const AddPersonalTaskSheet(),
+    );
+  }
+
+  void _showAddWorkspaceTaskSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => const AddWorkspaceTaskSheet(),
     );
   }
 
@@ -178,16 +190,46 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddSheet,
-        backgroundColor: AppColors.primary,
-        icon: const Icon(BootstrapIcons.plus_lg, color: Colors.white),
-        label: const Text(
-          '+ Add Task',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-      ),
+      floatingActionButton: _buildTaskFabs(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  Widget _buildTaskFabs() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Personal Task Button
+          Flexible(
+            child: FloatingActionButton.extended(
+              onPressed: _showAddPersonalTaskSheet,
+              heroTag: 'personalTask',
+              backgroundColor: AppColors.primary,
+              icon: const Icon(BootstrapIcons.person_fill, color: Colors.white, size: 18),
+              label: const Text(
+                'Personal Task',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Workspace Task Button
+          Flexible(
+            child: FloatingActionButton.extended(
+              onPressed: _showAddWorkspaceTaskSheet,
+              heroTag: 'workspaceTask',
+              backgroundColor: AppColors.primary.withValues(alpha: 0.85),
+              icon: const Icon(BootstrapIcons.people_fill, color: Colors.white, size: 18),
+              label: const Text(
+                'Workspace Task',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
